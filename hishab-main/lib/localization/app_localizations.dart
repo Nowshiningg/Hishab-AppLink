@@ -211,6 +211,94 @@ class AppLocalizations {
       'monthlySpend': 'How much did I spend this month?',
       'canISpend': 'Can I spend 500 today?',
       'spendingTrend': 'Am I spending more than last month?',
+
+      // Budget Module
+      'budgetManagement': 'Budget Management',
+      'setCategoryBudget': 'Set Category Budget',
+      'categoryBudget': 'Category Budget',
+      'monthlyLimit': 'Monthly Limit',
+      'weeklyLimit': 'Weekly Limit',
+      'alertThreshold': 'Alert Threshold',
+      'budgetSet': 'Budget set successfully',
+      'budgetUpdated': 'Budget updated',
+      'budgetExceeded': 'Budget Exceeded!',
+      'budgetWarning': 'Budget Warning',
+      'onTrack': 'On Track',
+      'excellent': 'Excellent',
+      'categoriesExceeded': 'Categories exceeded budget',
+      'categoriesWarning': 'Categories approaching limit',
+      'budgetMotivation': 'Keep up your spending discipline!',
+      'budgetRecommendations': 'Budget Recommendations',
+      'overallStatus': 'Overall Status',
+      'totalBudget': 'Total Budget',
+      'savingsStatus': 'Savings Status',
+
+      // Daily Reminders
+      'reminders': 'Reminders',
+      'reminderSettings': 'Reminder Settings',
+      'enableReminders': 'Enable Reminders',
+      'firstReminderTime': 'First Reminder',
+      'secondReminderTime': 'Second Reminder',
+      'enableMorningGreeting': 'Morning Greeting',
+      'enableEveningReview': 'Evening Review',
+      'enableWeeklyReview': 'Weekly Review',
+      'enableBudgetAlerts': 'Budget Alerts',
+      'nextReminder': 'Next Reminder',
+      'reminderTime': 'Reminder Time',
+      'updateYourExpenses': 'Update Your Expenses',
+      'dailyReview': 'Daily Review',
+      'weeklyReview': 'Weekly Review',
+      'monthlyReview': 'Monthly Review',
+      'spendingUpdate': 'Spending Update',
+      'averageDailySpending': 'Average Daily Spending',
+      'projectTotal': 'Projected Total',
+
+      // Enhanced Rewards
+      'rewardsHub': 'Rewards Hub',
+      'availableRewards': 'Available Rewards',
+      'rewardHistory': 'Reward History',
+      'pointsLeaderboard': 'Points Leaderboard',
+      'nextMilestone': 'Next Milestone',
+      'progressToMilestone': 'Progress to Milestone',
+      'budgetMastBadge': 'Budget Master Badge',
+      'consistencyStreak': 'Consistency Streak',
+      'daysInRow': 'days in a row',
+      'rewardingBehavior': 'Keep building great habits!',
+
+      // Banglalink Integration
+      'subscriptionManagement': 'Subscription Management',
+      'premiumSubscription': 'Premium Subscription',
+      'dailyCost': '₹2/day',
+      'renewalStatus': 'Renewal Status',
+      'banglaLinkRewards': 'Banglalink Rewards',
+      'data': 'Data',
+      'minutes': 'Minutes',
+      'discount': 'Discount',
+      'redeemOnBanglalink': 'Redeem on Banglalink',
+      'rewardRedeemed': 'Reward has been redeemed!',
+      'subscriptionActive': 'Your subscription is active',
+      'subscriptionExpires': 'Expires on',
+      'autoRenew': 'Auto Renewal',
+      'manualRenewal': 'Manual Renewal',
+      'cancelledStatus': 'Cancelled',
+
+      // Analytics & Insights
+      'analyticsInsights': 'Analytics & Insights',
+      'spendingInsights': 'Spending Insights',
+      'trends': 'Trends',
+      'monthOverMonth': 'Month-over-Month',
+      'categoryTrends': 'Category Trends',
+      'topSpenders': 'Top Spenders',
+      'savingsOpportunities': 'Savings Opportunities',
+      'averageSpending': 'Average Spending',
+      'projections': 'Projections',
+      'spendingForecast': 'Spending Forecast',
+
+      // Notifications
+      'budgetNotification': 'Budget Notification',
+      'congratulations': 'Congratulations!',
+      'milestone': 'Milestone Reached!',
+      'achievement': 'Achievement Unlocked!',
     },
     'bn': {
       // App Name
@@ -410,6 +498,94 @@ class AppLocalizations {
       'monthlySpend': 'এই মাসে আমি কত খরচ করেছি?',
       'canISpend': 'আজ আমি ৫০০ টাকা খরচ করতে পারি?',
       'spendingTrend': 'আমি কি গত মাসের চেয়ে বেশি খরচ করছি?',
+
+      // Budget Module
+      'budgetManagement': 'বাজেট পরিচালনা',
+      'setCategoryBudget': 'বাজেট নির্ধারণ করুন',
+      'categoryBudget': 'বিভাগ বাজেট',
+      'monthlyLimit': 'মাসিক সীমা',
+      'weeklyLimit': 'সাপ্তাহিক সীমা',
+      'alertThreshold': 'সতর্কতা থ্রেশহোল্ড',
+      'budgetSet': 'বাজেট নির্ধারণ করা হয়েছে',
+      'budgetUpdated': 'বাজেট আপডেট হয়েছে',
+      'budgetExceeded': 'বাজেট অতিক্রম হয়েছে!',
+      'budgetWarning': 'বাজেট সতর্কতা',
+      'onTrack': 'ট্র্যাকে আছেন',
+      'excellent': 'চমৎকার',
+      'categoriesExceeded': 'বিভাগ বাজেট অতিক্রম করেছে',
+      'categoriesWarning': 'বিভাগ সীমার কাছাকাছি',
+      'budgetMotivation': 'আপনার খরচ শৃঙ্খলা বজায় রাখুন!',
+      'budgetRecommendations': 'বাজেট সুপারিশ',
+      'overallStatus': 'সামগ্রিক অবস্থা',
+      'totalBudget': 'মোট বাজেট',
+      'savingsStatus': 'সঞ্চয় অবস্থা',
+
+      // Daily Reminders
+      'reminders': 'রিমাইন্ডার',
+      'reminderSettings': 'রিমাইন্ডার সেটিংস',
+      'enableReminders': 'রিমাইন্ডার সক্ষম করুন',
+      'firstReminderTime': 'প্রথম রিমাইন্ডার',
+      'secondReminderTime': 'দ্বিতীয় রিমাইন্ডার',
+      'enableMorningGreeting': 'সকালের অভিনন্দন',
+      'enableEveningReview': 'সন্ধ্যার পর্যালোচনা',
+      'enableWeeklyReview': 'সাপ্তাহিক পর্যালোচনা',
+      'enableBudgetAlerts': 'বাজেট সতর্কতা',
+      'nextReminder': 'পরবর্তী রিমাইন্ডার',
+      'reminderTime': 'রিমাইন্ডার সময়',
+      'updateYourExpenses': 'আপনার খরচ আপডেট করুন',
+      'dailyReview': 'দৈনিক পর্যালোচনা',
+      'weeklyReview': 'সাপ্তাহিক পর্যালোচনা',
+      'monthlyReview': 'মাসিক পর্যালোচনা',
+      'spendingUpdate': 'খরচ আপডেট',
+      'averageDailySpending': 'গড় দৈনিক খরচ',
+      'projectTotal': 'প্রজেক্টেড মোট',
+
+      // Enhanced Rewards
+      'rewardsHub': 'রিওয়ার্ড হাব',
+      'availableRewards': 'উপলব্ধ রিওয়ার্ড',
+      'rewardHistory': 'রিওয়ার্ড ইতিহাস',
+      'pointsLeaderboard': 'পয়েন্ট লিডারবোর্ড',
+      'nextMilestone': 'পরবর্তী মাইলফলক',
+      'progressToMilestone': 'মাইলফলকের দিকে অগ্রগতি',
+      'budgetMastBadge': 'বাজেট মাস্টার ব্যাজ',
+      'consistencyStreak': 'ধারাবাহিকতা স্ট্রিক',
+      'daysInRow': 'ধারাবাহিক দিন',
+      'rewardingBehavior': 'দুর্দান্ত অভ্যাস গড়ে তুলতে থাকুন!',
+
+      // Banglalink Integration
+      'subscriptionManagement': 'সাবস্ক্রিপশন ব্যবস্থাপনা',
+      'premiumSubscription': 'প্রিমিয়াম সাবস্ক্রিপশন',
+      'dailyCost': '₹২/দিন',
+      'renewalStatus': 'নবায়ন অবস্থা',
+      'banglaLinkRewards': 'বাংলালিংক রিওয়ার্ড',
+      'data': 'ডেটা',
+      'minutes': 'মিনিট',
+      'discount': 'ছাড়',
+      'redeemOnBanglalink': 'বাংলালিংকে রিডিম করুন',
+      'rewardRedeemed': 'রিওয়ার্ড রিডিম করা হয়েছে!',
+      'subscriptionActive': 'আপনার সাবস্ক্রিপশন সক্রিয়',
+      'subscriptionExpires': 'এ মেয়াদোত্তীর্ণ হয়',
+      'autoRenew': 'স্বয়ংক্রিয় নবায়ন',
+      'manualRenewal': 'ম্যানুয়াল নবায়ন',
+      'cancelledStatus': 'বাতিল',
+
+      // Analytics & Insights
+      'analyticsInsights': 'বিশ্লেষণ ও অন্তর্দৃষ্টি',
+      'spendingInsights': 'খরচ অন্তর্দৃষ্টি',
+      'trends': 'প্রবণতা',
+      'monthOverMonth': 'মাস থেকে মাস',
+      'categoryTrends': 'বিভাগ প্রবণতা',
+      'topSpenders': 'শীর্ষ ব্যয়কারী',
+      'savingsOpportunities': 'সঞ্চয় সুযোগ',
+      'averageSpending': 'গড় খরচ',
+      'projections': 'প্রজেকশন',
+      'spendingForecast': 'খরচ পূর্বাভাস',
+
+      // Notifications
+      'budgetNotification': 'বাজেট বিজ্ঞপ্তি',
+      'congratulations': 'অভিনন্দন!',
+      'milestone': 'মাইলফলক পৌঁছেছে!',
+      'achievement': 'অর্জন আনলক হয়েছে!',
     },
   };
 
@@ -436,6 +612,9 @@ class AppLocalizations {
     // For custom categories, return as-is
     return categoryName;
   }
+
+  // Language code getter
+  String get languageCode => locale.languageCode;
 
   // Convenience getters
   String get appName => translate('appName');

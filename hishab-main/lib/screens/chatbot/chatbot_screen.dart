@@ -37,7 +37,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     super.initState();
     _speech = stt.SpeechToText();
     _initSpeech();
-    _addWelcomeMessage();
+    // Add welcome message after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _addWelcomeMessage();
+    });
   }
 
   @override
@@ -52,16 +55,27 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 
   void _addWelcomeMessage() {
-    final loc = AppLocalizations.of(context);
-    setState(() {
-      _messages.add(ChatMessage(
-        text: loc.languageCode == 'bn'
-            ? 'হ্যালো! আমি ফিনব্রো। আমি আপনার খরচ সম্পর্কে প্রশ্নের উত্তর দিতে পারি। কিছু জিজ্ঞাসা করুন!'
-            : 'Hello! I\'m Finbro. I can answer questions about your expenses. Ask me anything!',
-        isUser: false,
-        timestamp: DateTime.now(),
-      ));
-    });
+    try {
+      final loc = AppLocalizations.of(context);
+      setState(() {
+        _messages.add(ChatMessage(
+          text: loc.languageCode == 'bn'
+              ? 'হ্যালো! আমি ফিনব্রো। আমি আপনার খরচ সম্পর্কে প্রশ্নের উত্তর দিতে পারি। কিছু জিজ্ঞাসা করুন!'
+              : 'Hello! I\'m Finbro. I can answer questions about your expenses. Ask me anything!',
+          isUser: false,
+          timestamp: DateTime.now(),
+        ));
+      });
+    } catch (e) {
+      // Fallback if localization not available
+      setState(() {
+        _messages.add(ChatMessage(
+          text: 'Hello! I\'m Finbro. I can answer questions about your expenses. Ask me anything!',
+          isUser: false,
+          timestamp: DateTime.now(),
+        ));
+      });
+    }
   }
 
   void _startListening() async {
