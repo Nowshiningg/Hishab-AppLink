@@ -104,7 +104,7 @@ class BudgetService {
     final totalRemainingMonthly = totalMonthlyBudget - totalSpentThisMonth;
     final overallPercentage = totalMonthlyBudget > 0
         ? (totalSpentThisMonth / totalMonthlyBudget) * 100
-        : 0;
+        : 0.0;
 
     return OverallBudgetStatus(
       totalMonthlyBudget: totalMonthlyBudget,
