@@ -251,7 +251,7 @@ class DashboardTab extends StatelessWidget {
                   delegate: SliverChildListDelegate([
                     // Premium Subscription Banner
                     _PremiumBanner(),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     // Quick Actions
                     Row(
                       children: [
@@ -568,35 +568,35 @@ class _PremiumBannerState extends State<_PremiumBanner> {
 
   Widget _buildPremiumActiveCard() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF4CAF50), Color(0xFF45a049)],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4CAF50).withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF4CAF50).withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
               Icons.workspace_premium,
               color: Colors.white,
-              size: 32,
+              size: 20,
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -605,16 +605,15 @@ class _PremiumBannerState extends State<_PremiumBanner> {
                   'Premium Active',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 4),
                 Text(
                   'All features unlocked',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -631,8 +630,10 @@ class _PremiumBannerState extends State<_PremiumBanner> {
             icon: const Icon(
               Icons.arrow_forward_ios,
               color: Colors.white,
-              size: 20,
+              size: 16,
             ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
           ),
         ],
       ),
@@ -649,7 +650,7 @@ class _PremiumBannerState extends State<_PremiumBanner> {
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -657,30 +658,30 @@ class _PremiumBannerState extends State<_PremiumBanner> {
               const Color(0xFFF16725).withOpacity(0.8),
             ],
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFF16725).withOpacity(0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: const Color(0xFFF16725).withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
                 Icons.workspace_premium,
                 color: Colors.white,
-                size: 32,
+                size: 20,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -689,16 +690,15 @@ class _PremiumBannerState extends State<_PremiumBanner> {
                     'Go Premium',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 4),
                   Text(
                     'Only ৳2/day • Unlock all features',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 11,
                     ),
                   ),
                 ],
@@ -707,7 +707,7 @@ class _PremiumBannerState extends State<_PremiumBanner> {
             const Icon(
               Icons.arrow_forward_ios,
               color: Colors.white,
-              size: 20,
+              size: 16,
             ),
           ],
         ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'banglalink_integration_service.dart';
-import '../models/transaction.dart';
 
 /// Service to handle PDF export with CaaS payment integration
 class PdfExportService {

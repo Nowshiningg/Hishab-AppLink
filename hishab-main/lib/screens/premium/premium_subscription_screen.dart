@@ -14,7 +14,7 @@ class _PremiumSubscriptionScreenState extends State<PremiumSubscriptionScreen> {
   bool _isLoading = true;
   bool _isSubscribed = false;
   bool _isProcessing = false;
-  Subscription? _subscription;
+  dynamic _subscription;
 
   @override
   void initState() {
@@ -79,7 +79,7 @@ class _PremiumSubscriptionScreenState extends State<PremiumSubscriptionScreen> {
     try {
       final success = await _blService.unsubscribeFromPremium();
       
-      if (success) {
+      if (success == true) {
         setState(() {
           _isSubscribed = false;
           _subscription = null;
@@ -430,12 +430,12 @@ class _PremiumSubscriptionScreenState extends State<PremiumSubscriptionScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoRow('Status', _subscription!.status.toUpperCase()),
+                  _buildInfoRow('Status', (_subscription.status as String).toUpperCase()),
                   const Divider(height: 24),
-                  _buildInfoRow('Subscribed On', _formatDate(_subscription!.subscribedAt)),
-                  if (_subscription!.nextBillingDate != null) ...[
+                  _buildInfoRow('Subscribed On', _formatDate(_subscription.subscribedAt as DateTime)),
+                  if ((_subscription.nextBillingDate as DateTime?) != null) ...[
                     const Divider(height: 24),
-                    _buildInfoRow('Next Billing', _formatDate(_subscription!.nextBillingDate!)),
+                    _buildInfoRow('Next Billing', _formatDate(_subscription.nextBillingDate as DateTime)),
                   ],
                   const Divider(height: 24),
                   _buildInfoRow('Price', '৳2/day'),
