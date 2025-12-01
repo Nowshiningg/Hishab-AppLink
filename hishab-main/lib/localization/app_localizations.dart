@@ -190,14 +190,7 @@ class AppLocalizations {
       'categoryHealth': 'Health',
       'categoryOther': 'Other',
 
-      // Voice Expense
-      'voiceExpense': 'Voice Expense',
-      'listening': 'Listening...',
-      'tapToSpeak': 'Tap to Speak',
-      'voiceInstructions': 'Say something like "500 for groceries" or "200 books"',
-      'heard': 'I heard',
-      'understood': 'Understood',
-      'notDetected': 'Not detected',
+      // Voice Expense (keys already defined above - removed duplicates)
       'selectCategory': 'Please select a category',
       'pleaseSelectCategory': 'Please select a category',
       'microphoneNotAvailable': 'Microphone not available',
@@ -477,14 +470,7 @@ class AppLocalizations {
       'categoryHealth': 'স্বাস্থ্য',
       'categoryOther': 'অন্যান্য',
 
-      // Voice Expense
-      'voiceExpense': 'ভয়েস খরচ',
-      'listening': 'শুনছি...',
-      'tapToSpeak': 'বলতে ট্যাপ করুন',
-      'voiceInstructions': '"৫০০ জন্য মুদি" বা "২০০ বই" এর মত কিছু বলুন',
-      'heard': 'আমি শুনেছি',
-      'understood': 'বুঝেছি',
-      'notDetected': 'সনাক্ত করা যায়নি',
+      // Voice Expense (keys already defined above - removed duplicates)
       'selectCategory': 'একটি ক্যাটাগরি নির্বাচন করুন',
       'pleaseSelectCategory': 'দয়া করে একটি ক্যাটাগরি নির্বাচন করুন',
       'microphoneNotAvailable': 'মাইক্রোফোন উপলব্ধ নেই',

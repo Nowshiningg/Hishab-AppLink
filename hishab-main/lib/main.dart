@@ -6,9 +6,26 @@ import 'providers/finance_provider.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'localization/app_localizations.dart';
+import 'services/banglalink_integration_service.dart';
+import 'services/update_checker_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Banglalink Integration Service
+  // Note: User ID and phone number will be set when user completes onboarding
+  // For now, we'll check if they exist in SharedPreferences
+  final prefs = await SharedPreferences.getInstance();
+  final userId = prefs.getString('user_id');
+  final phoneNumber = prefs.getString('phone_number');
+  
+  if (userId != null && phoneNumber != null) {
+    BanglalinkIntegrationService().initialize(
+      userId: userId,
+      phoneNumber: phoneNumber,
+    );
+  }
+  
   runApp(const MyApp());
 }
 
@@ -99,6 +116,9 @@ class _SplashScreenState extends State<SplashScreen> {
     final hasSetIncome = prefs.getBool('income_set') ?? false;
 
     if (!mounted) return;
+
+    // Check for app updates in background
+    UpdateCheckerService.checkForUpdates(context, '1.0.0');
 
     if (!hasSeenOnboarding) {
       Navigator.of(context).pushReplacement(
