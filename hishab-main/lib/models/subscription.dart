@@ -1,5 +1,6 @@
 /// Subscription Model
 /// Represents a user's premium subscription status
+library;
 
 class Subscription {
   final String userId;
