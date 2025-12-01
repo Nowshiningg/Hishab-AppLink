@@ -229,7 +229,7 @@ class DailyRemindersService {
     
     return ReminderNotification(
       id: 'budget_alert_${categoryName}_${DateTime.now().millisecondsSinceEpoch}',
-      title: '⚠️ Budget Alert: ${categoryName}',
+      title: '⚠️ Budget Alert: $categoryName',
       message: isExceeded
           ? 'You\'ve exceeded your $categoryName budget by ৳${(spent - limit).toStringAsFixed(0)}.'
           : 'You\'ve spent ${percentage.toStringAsFixed(0)}% of your $categoryName budget. '

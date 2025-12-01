@@ -1,4 +1,3 @@
-import '../models/reward.dart';
 
 class RewardSystemService {
   // Reward calculation rules based on spending behavior
