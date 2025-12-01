@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../providers/finance_provider.dart';
 import '../../models/category_model.dart';
 import '../../localization/app_localizations.dart';
+import '../../services/notification_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -41,6 +42,10 @@ class SettingsScreen extends StatelessWidget {
                 _buildThemeCard(context, provider),
                 const SizedBox(height: 12),
                 _buildLanguageCard(context, provider),
+              ]),
+              const SizedBox(height: 24),
+              _buildSection(loc.translate('notifications'), [
+                _buildNotificationsCard(context),
               ]),
               const SizedBox(height: 24),
               _buildSection(loc.translate('financialSettings'), [
@@ -643,6 +648,175 @@ class SettingsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildNotificationsCard(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    final notificationService = NotificationService();
+
+    return FutureBuilder<Map<String, dynamic>>(
+      future: Future.wait([
+        notificationService.areNotificationsEnabled(),
+        notificationService.getReminderTime(),
+      ]).then((results) => {
+        'enabled': results[0] as bool,
+        'time': results[1] as String,
+      }),
+      builder: (context, snapshot) {
+        final enabled = snapshot.data?['enabled'] as bool? ?? true;
+        final time = snapshot.data?['time'] as String? ?? '20:00';
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: const Color(0xFF4ECDC4).withOpacity(0.2),
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF4ECDC4).withOpacity(0.1),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF4ECDC4), Color(0xFF45B7D1)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF4ECDC4).withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.notifications_active,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          loc.translate('dailyReminder'),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          enabled
+                              ? '${loc.translate('reminderTime')}: $time'
+                              : loc.translate('reminderDisabled'),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: enabled,
+                    activeColor: const Color(0xFF4ECDC4),
+                    onChanged: (value) async {
+                      if (value) {
+                        await _showTimePickerDialog(context, time);
+                      } else {
+                        await notificationService.cancelDailyReminder();
+                        // Rebuild widget
+                        if (context.mounted) {
+                          (context as Element).markNeedsBuild();
+                        }
+                      }
+                    },
+                  ),
+                ],
+              ),
+              if (enabled) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
+                TextButton.icon(
+                  onPressed: () => _showTimePickerDialog(context, time),
+                  icon: const Icon(Icons.schedule, color: Color(0xFF4ECDC4)),
+                  label: Text(
+                    loc.translate('changeReminderTime'),
+                    style: const TextStyle(color: Color(0xFF4ECDC4)),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showTimePickerDialog(BuildContext context, String currentTime) async {
+    final loc = AppLocalizations.of(context);
+    final parts = currentTime.split(':');
+    final initialTime = TimeOfDay(
+      hour: int.parse(parts[0]),
+      minute: int.parse(parts[1]),
+    );
+
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF4ECDC4),
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && context.mounted) {
+      final timeString = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      await NotificationService().scheduleDailyReminder(timeString);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.translate('reminderScheduled')),
+            backgroundColor: const Color(0xFF4ECDC4),
+          ),
+        );
+        // Force rebuild
+        (context as Element).markNeedsBuild();
+      }
+    }
   }
 
   Widget _buildAboutCard(BuildContext context) {

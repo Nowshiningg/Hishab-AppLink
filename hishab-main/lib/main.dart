@@ -6,9 +6,14 @@ import 'providers/finance_provider.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'localization/app_localizations.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize notification service
+  await NotificationService().initialize();
+
   runApp(const MyApp());
 }
 

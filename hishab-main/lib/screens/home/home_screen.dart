@@ -8,6 +8,8 @@ import '../categories/category_breakdown_screen.dart';
 import '../settings/settings_screen.dart';
 import '../voice/voice_expense_screen.dart';
 import '../chatbot/chatbot_screen.dart';
+import '../rewards/rewards_screen.dart';
+import '../budget/category_budgets_screen.dart';
 import '../../localization/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -283,6 +285,12 @@ class DashboardTab extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    // Rewards Button
+                    _buildRewardsCard(context, loc, provider),
+                    const SizedBox(height: 12),
+                    // Category Budgets Button
+                    _buildCategoryBudgetsCard(context, loc),
                     const SizedBox(height: 20),
                     _buildSummaryCard(
                       loc.translate('thisWeek'),
@@ -496,6 +504,173 @@ class DashboardTab extends StatelessWidget {
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRewardsCard(
+    BuildContext context,
+    AppLocalizations loc,
+    FinanceProvider provider,
+  ) {
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const RewardsScreen(),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF9C27B0),
+              Color(0xFF7B1FA2),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF9C27B0).withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.stars,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    loc.translate('rewards'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${provider.totalPoints} ${loc.translate('points')} • ${provider.consecutiveDays} ${loc.translate('daysStreak')}',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryBudgetsCard(
+    BuildContext context,
+    AppLocalizations loc,
+  ) {
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const CategoryBudgetsScreen(),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0066CC),
+              Color(0xFF0052A3),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0066CC).withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.account_balance_wallet,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    loc.translate('categoryBudgets'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    loc.translate('manageCategoryBudgets'),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white,
+              size: 20,
             ),
           ],
         ),
