@@ -54,7 +54,7 @@ dependencies:
   shared_preferences: ^2.2.2
 
   # Voice recognition
-  speech_to_text: ^6.6.0
+  speech_to_text: ^7.0.0
   permission_handler: ^11.0.1
 
   # HTTP for API calls
