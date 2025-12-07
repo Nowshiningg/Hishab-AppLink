@@ -25,8 +25,9 @@ class DatabaseHelper {
       databaseFactory = databaseFactoryFfiWeb;
       return await openDatabase(
         inMemoryDatabasePath,
-        version: 1,
+        version: 2,
         onCreate: _createDB,
+        onUpgrade: _upgradeDB,
       );
     } else {
       // For mobile platforms
@@ -34,8 +35,9 @@ class DatabaseHelper {
       final path = join(dbPath, filePath);
       return await openDatabase(
         path,
-        version: 1,
+        version: 2,
         onCreate: _createDB,
+        onUpgrade: _upgradeDB,
       );
     }
   }
@@ -100,6 +102,41 @@ class DatabaseHelper {
 
     // Insert default categories
     await _insertDefaultCategories(db);
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    // Migration from version 1 to version 2
+    if (oldVersion < 2) {
+      // Create rewards table if it doesn't exist
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS rewards (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            points INTEGER NOT NULL,
+            reason TEXT NOT NULL,
+            timestamp TEXT NOT NULL,
+            type TEXT NOT NULL
+          )
+        ''');
+      } catch (e) {
+        print('Error creating rewards table: $e');
+      }
+
+      // Create category_budgets table if it doesn't exist
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS category_budgets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category_name TEXT NOT NULL,
+            budget_amount REAL NOT NULL,
+            month TEXT NOT NULL,
+            year INTEGER NOT NULL
+          )
+        ''');
+      } catch (e) {
+        print('Error creating category_budgets table: $e');
+      }
+    }
   }
 
   Future<void> _insertDefaultCategories(Database db) async {
@@ -348,13 +385,33 @@ class DatabaseHelper {
   // Clear all data
   Future<void> clearAllData() async {
     final db = await database;
-    await db.delete('expenses');
-    await db.delete('income');
-    await db.delete('rewards');
-    await db.delete('category_budgets');
-    // Don't delete categories, just reset them
-    await db.delete('categories');
-    await _insertDefaultCategories(db);
+    try {
+      await db.delete('expenses');
+    } catch (e) {
+      print('Error clearing expenses: $e');
+    }
+    try {
+      await db.delete('income');
+    } catch (e) {
+      print('Error clearing income: $e');
+    }
+    try {
+      await db.delete('rewards');
+    } catch (e) {
+      print('Error clearing rewards: $e');
+    }
+    try {
+      await db.delete('category_budgets');
+    } catch (e) {
+      print('Error clearing category_budgets: $e');
+    }
+    try {
+      // Don't delete categories, just reset them
+      await db.delete('categories');
+      await _insertDefaultCategories(db);
+    } catch (e) {
+      print('Error clearing categories: $e');
+    }
   }
 
   Future<void> close() async {
