@@ -78,11 +78,8 @@ class BangalinkApiService {
     try {
       // TODO: Implement actual API call
       final response = await http.get(
-        Uri.parse('$_apiBaseUrl$_subscriptionEndpoint/status/$phoneNumber'),
-        headers: {
-          'X-API-Key': _apiKey,
-          'X-App-Id': _appId,
-        },
+        Uri.parse('${BangalinkConfig.apiBaseUrl}$_subscriptionEndpoint/status/$phoneNumber'),
+        headers: BangalinkConfig.getCommonHeaders(),
       );
 
       if (response.statusCode == 200) {
@@ -114,12 +111,8 @@ class BangalinkApiService {
     try {
       // TODO: Implement actual API call
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl$_subscriptionEndpoint/unsubscribe'),
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': _apiKey,
-          'X-App-Id': _appId,
-        },
+        Uri.parse('${BangalinkConfig.apiBaseUrl}$_subscriptionEndpoint/unsubscribe'),
+        headers: BangalinkConfig.getCommonHeaders(),
         body: jsonEncode({
           'phone_number': phoneNumber,
         }),
@@ -158,12 +151,8 @@ class BangalinkApiService {
     try {
       // TODO: Implement actual API call
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl$_caasEndpoint/charge'),
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': _apiKey,
-          'X-App-Id': _appId,
-        },
+        Uri.parse('${BangalinkConfig.apiBaseUrl}$_caasEndpoint/charge'),
+        headers: BangalinkConfig.getCommonHeaders(),
         body: jsonEncode({
           'phone_number': phoneNumber,
           'amount': amount,
@@ -207,12 +196,8 @@ class BangalinkApiService {
     try {
       // TODO: Implement actual API call
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl$_caasEndpoint/deliver/data'),
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': _apiKey,
-          'X-App-Id': _appId,
-        },
+        Uri.parse('${BangalinkConfig.apiBaseUrl}$_caasEndpoint/deliver/data'),
+        headers: BangalinkConfig.getCommonHeaders(),
         body: jsonEncode({
           'phone_number': phoneNumber,
           'data_mb': dataMB,
@@ -247,12 +232,8 @@ class BangalinkApiService {
     try {
       // TODO: Implement actual API call
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl$_caasEndpoint/deliver/minutes'),
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': _apiKey,
-          'X-App-Id': _appId,
-        },
+        Uri.parse('${BangalinkConfig.apiBaseUrl}$_caasEndpoint/deliver/minutes'),
+        headers: BangalinkConfig.getCommonHeaders(),
         body: jsonEncode({
           'phone_number': phoneNumber,
           'minutes': minutes,
@@ -289,16 +270,12 @@ class BangalinkApiService {
     try {
       // TODO: Implement actual API call
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl$_smsEndpoint/send'),
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': _apiKey,
-          'X-App-Id': _appId,
-        },
+        Uri.parse('${BangalinkConfig.apiBaseUrl}$_smsEndpoint/send'),
+        headers: BangalinkConfig.getCommonHeaders(),
         body: jsonEncode({
           'phone_number': phoneNumber,
           'message': summary,
-          'sender_id': 'Hishab',
+          'sender_id': BangalinkConfig.smsSenderId,
         }),
       );
 
@@ -347,16 +324,12 @@ class BangalinkApiService {
     try {
       // TODO: Implement actual API call
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl$_ussdEndpoint/register'),
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': _apiKey,
-          'X-App-Id': _appId,
-        },
+        Uri.parse('${BangalinkConfig.apiBaseUrl}$_ussdEndpoint/register'),
+        headers: BangalinkConfig.getCommonHeaders(),
         body: jsonEncode({
           'phone_number': phoneNumber,
           'short_code': shortCode,
-          'app': 'Hishab',
+          'app': BangalinkConfig.appName,
         }),
       );
 
@@ -413,12 +386,8 @@ class BangalinkApiService {
     try {
       // TODO: Implement actual API call
       final response = await http.post(
-        Uri.parse('$_apiBaseUrl$_downloadableEndpoint/generate'),
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': _apiKey,
-          'X-App-Id': _appId,
-        },
+        Uri.parse('${BangalinkConfig.apiBaseUrl}$_downloadableEndpoint/generate'),
+        headers: BangalinkConfig.getCommonHeaders(),
         body: jsonEncode({
           'phone_number': phoneNumber,
           'report_type': reportType,
