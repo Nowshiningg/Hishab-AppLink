@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/user_registration_service.dart';
+import '../../services/otp_service.dart';
 import 'income_setup_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -14,10 +15,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _otpController = TextEditingController();
   bool _isLoading = false;
+  bool _showOtpField = false;
+  int _otpRemainingSeconds = 0;
   String? _errorMessage;
+  String? _successMessage;
 
   final _registrationService = UserRegistrationService();
+  final _otpService = OTPService();
 
   @override
   void initState() {
@@ -28,11 +34,73 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
+    _otpController.dispose();
     super.dispose();
   }
 
-  Future<void> _submitForm() async {
+  Future<void> _requestOtp() async {
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _successMessage = null;
+    });
+
+    try {
+      final result = await _otpService.sendOtp(
+        phoneNumber: _phoneController.text.trim(),
+        appUserId: 'temp_${_phoneController.text.trim()}',
+      );
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        setState(() {
+          _showOtpField = true;
+          _otpRemainingSeconds = result['expiresIn'] ?? 300;
+          _successMessage = '✅ OTP sent to ${_phoneController.text.trim()}\n📱 Demo OTP: ${result['otp']} (shown for testing only)';
+          _errorMessage = null;
+        });
+        _startOtpTimer();
+      } else {
+        setState(() {
+          _errorMessage = result['message'] ?? 'Failed to send OTP';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error: $e';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _startOtpTimer() {
+    Future.delayed(const Duration(seconds: 1)).then((_) {
+      if (mounted && _otpRemainingSeconds > 0) {
+        setState(() {
+          _otpRemainingSeconds--;
+        });
+        if (_otpRemainingSeconds > 0) {
+          _startOtpTimer();
+        }
+      }
+    });
+  }
+
+  Future<void> _verifyOtpAndRegister() async {
+    if (_otpController.text.trim().isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter OTP';
+      });
       return;
     }
 
@@ -42,30 +110,83 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     });
 
     try {
-      final result = await _registrationService.registerUser(
+      final otpResult = await _otpService.verifyOtp(
+        enteredOtp: _otpController.text.trim(),
+        phoneNumber: _phoneController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      if (otpResult['success'] != true) {
+        setState(() {
+          _errorMessage = otpResult['message'] ?? 'OTP verification failed';
+        });
+        return;
+      }
+
+      // OTP verified, now register user
+      final registerResult = await _registrationService.registerUser(
         name: _nameController.text.trim(),
         phoneNumber: _phoneController.text.trim(),
       );
 
       if (!mounted) return;
 
-      if (result['success'] == true) {
-        // Save registration complete flag
+      if (registerResult['success'] == true) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('user_registered', true);
 
-        // Navigate to income setup
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const IncomeSetupScreen()),
         );
       } else {
         setState(() {
-          _errorMessage = result['message'] ?? 'Registration failed';
+          _errorMessage = registerResult['message'] ?? 'Registration failed';
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'An error occurred: $e';
+        _errorMessage = 'Error: $e';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _resendOtp() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final result = await _otpService.resendOtp(
+        phoneNumber: _phoneController.text.trim(),
+        appUserId: 'temp_${_phoneController.text.trim()}',
+      );
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        _otpController.clear();
+        setState(() {
+          _otpRemainingSeconds = result['expiresIn'] ?? 300;
+          _successMessage = '✅ New OTP sent\n📱 Demo OTP: ${result['otp']}';
+          _errorMessage = null;
+        });
+        _startOtpTimer();
+      } else {
+        setState(() {
+          _errorMessage = result['message'] ?? 'Failed to resend OTP';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error: $e';
       });
     } finally {
       if (mounted) {
@@ -167,6 +288,35 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ),
                   ),
                 if (_errorMessage != null) const SizedBox(height: 20),
+
+                // Success Message
+                if (_successMessage != null)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      border: Border.all(color: Colors.green.withOpacity(0.5)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.check_circle_outline, color: Colors.green, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _successMessage!,
+                            style: TextStyle(
+                              color: Colors.green[700],
+                              fontSize: 13,
+                              fontFamily: 'Courier',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (_successMessage != null) const SizedBox(height: 20),
 
                 // Full Name Field
                 Text(
@@ -313,9 +463,89 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     fontStyle: FontStyle.italic,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
 
-                // Privacy Notice
+                // OTP Field (shown after sending OTP)
+                if (_showOtpField) ...[
+                  Text(
+                    'Enter OTP *',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _otpController,
+                    enabled: !_isLoading,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 8,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: '000000',
+                      counterText: '',
+                      prefixIcon: Icon(
+                        Icons.security,
+                        color: colorScheme.primary,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey[300]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[50],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _otpRemainingSeconds > 0
+                            ? 'Expires in ${_otpRemainingSeconds}s'
+                            : 'OTP Expired',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _otpRemainingSeconds > 0
+                              ? Colors.orange
+                              : Colors.red,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _otpRemainingSeconds <= 0 && !_isLoading
+                            ? _resendOtp
+                            : null,
+                        child: Text(
+                          _otpRemainingSeconds <= 0 ? 'Resend OTP' : 'Resend',
+                          style: TextStyle(
+                            color: _otpRemainingSeconds <= 0
+                                ? colorScheme.primary
+                                : Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                ],
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -349,12 +579,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Register Button
+                // Register/Send OTP Button
                 SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _submitForm,
+                    onPressed: _isLoading
+                        ? null
+                        : (_showOtpField ? _verifyOtpAndRegister : _requestOtp),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.primary,
                       disabledBackgroundColor: Colors.grey[300],
@@ -374,9 +606,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                           )
-                        : const Text(
-                            'Create Account',
-                            style: TextStyle(
+                        : Text(
+                            _showOtpField
+                                ? 'Verify & Create Account'
+                                : 'Send OTP',
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
