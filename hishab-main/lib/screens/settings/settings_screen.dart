@@ -5,6 +5,10 @@ import 'package:intl/intl.dart';
 import '../../providers/finance_provider.dart';
 import '../../models/category_model.dart';
 import '../../localization/app_localizations.dart';
+import '../../services/notification_service.dart';
+import '../../services/banglalink_integration_service.dart';
+import '../../services/update_checker_service.dart';
+import '../premium/premium_subscription_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -43,8 +47,18 @@ class SettingsScreen extends StatelessWidget {
                 _buildLanguageCard(context, provider),
               ]),
               const SizedBox(height: 24),
+              _buildSection(loc.translate('notifications'), [
+                _buildNotificationsCard(context),
+              ]),
+              const SizedBox(height: 24),
               _buildSection(loc.translate('financialSettings'), [
                 _buildIncomeCard(context, income),
+              ]),
+              const SizedBox(height: 24),
+              _buildSection('Premium & Notifications', [
+                _buildPremiumCard(context),
+                const SizedBox(height: 12),
+                _buildSmsNotificationsCard(context, provider),
               ]),
               const SizedBox(height: 24),
               _buildSection(loc.translate('categories'), [
@@ -55,7 +69,11 @@ class SettingsScreen extends StatelessWidget {
                 _buildClearDataCard(context, provider),
               ]),
               const SizedBox(height: 24),
-              _buildSection(loc.translate('about'), [_buildAboutCard(context)]),
+              _buildSection(loc.translate('about'), [
+                _buildAboutCard(context),
+                const SizedBox(height: 12),
+                UpdateCheckerService.buildUpdateButton(context, '1.0.0'),
+              ]),
             ],
           );
         },
@@ -645,6 +663,175 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildNotificationsCard(BuildContext context) {
+    final loc = AppLocalizations.of(context);
+    final notificationService = NotificationService();
+
+    return FutureBuilder<Map<String, dynamic>>(
+      future: Future.wait([
+        notificationService.areNotificationsEnabled(),
+        notificationService.getReminderTime(),
+      ]).then((results) => {
+        'enabled': results[0] as bool,
+        'time': results[1] as String,
+      }),
+      builder: (context, snapshot) {
+        final enabled = snapshot.data?['enabled'] as bool? ?? true;
+        final time = snapshot.data?['time'] as String? ?? '20:00';
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: const Color(0xFF4ECDC4).withOpacity(0.2),
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF4ECDC4).withOpacity(0.1),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF4ECDC4), Color(0xFF45B7D1)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF4ECDC4).withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.notifications_active,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          loc.translate('dailyReminder'),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          enabled
+                              ? '${loc.translate('reminderTime')}: $time'
+                              : loc.translate('reminderDisabled'),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: enabled,
+                    activeColor: const Color(0xFF4ECDC4),
+                    onChanged: (value) async {
+                      if (value) {
+                        await _showTimePickerDialog(context, time);
+                      } else {
+                        await notificationService.cancelDailyReminder();
+                        // Rebuild widget
+                        if (context.mounted) {
+                          (context as Element).markNeedsBuild();
+                        }
+                      }
+                    },
+                  ),
+                ],
+              ),
+              if (enabled) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
+                TextButton.icon(
+                  onPressed: () => _showTimePickerDialog(context, time),
+                  icon: const Icon(Icons.schedule, color: Color(0xFF4ECDC4)),
+                  label: Text(
+                    loc.translate('changeReminderTime'),
+                    style: const TextStyle(color: Color(0xFF4ECDC4)),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showTimePickerDialog(BuildContext context, String currentTime) async {
+    final loc = AppLocalizations.of(context);
+    final parts = currentTime.split(':');
+    final initialTime = TimeOfDay(
+      hour: int.parse(parts[0]),
+      minute: int.parse(parts[1]),
+    );
+
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF4ECDC4),
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && context.mounted) {
+      final timeString = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      await NotificationService().scheduleDailyReminder(timeString);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(loc.translate('reminderScheduled')),
+            backgroundColor: const Color(0xFF4ECDC4),
+          ),
+        );
+        // Force rebuild
+        (context as Element).markNeedsBuild();
+      }
+    }
+  }
+
   Widget _buildAboutCard(BuildContext context) {
     final loc = AppLocalizations.of(context);
     return Builder(
@@ -1150,6 +1337,379 @@ class SettingsScreen extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildPremiumCard(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: BanglalinkIntegrationService().isPremiumSubscriber(),
+      builder: (context, snapshot) {
+        final isPremium = snapshot.data ?? false;
+        
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isPremium
+                  ? [const Color(0xFF4CAF50), const Color(0xFF45a049)]
+                  : [const Color(0xFFF16725), const Color(0xFFF16725).withOpacity(0.8)],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: (isPremium ? const Color(0xFF4CAF50) : const Color(0xFFF16725))
+                    .withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.workspace_premium,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isPremium ? 'Premium Active' : 'Go Premium',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          isPremium
+                              ? 'All features unlocked'
+                              : 'Unlock all features for ৳2/day',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    isPremium ? Icons.check_circle : Icons.arrow_forward_ios,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ],
+              ),
+              if (!isPremium) ...[
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const PremiumSubscriptionScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFFF16725),
+                    minimumSize: const Size(double.infinity, 45),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'View Details',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ] else ...[
+                const SizedBox(height: 16),
+                OutlinedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const PremiumSubscriptionScreen(),
+                      ),
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white, width: 2),
+                    minimumSize: const Size(double.infinity, 45),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Manage Subscription',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSmsNotificationsCard(BuildContext context, FinanceProvider provider) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFF16725).withOpacity(0.2),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF16725).withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFFF16725).withOpacity(0.2),
+                      const Color(0xFFF16725).withOpacity(0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.sms,
+                  color: Color(0xFFF16725),
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'SMS Notifications',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Stay updated via SMS',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _SmsNotificationTile(
+            title: 'Monthly Summary',
+            description: 'Receive expense summary at month end',
+            icon: Icons.calendar_month,
+            onTap: () => _showMonthlySummaryDialog(context, provider),
+          ),
+          const Divider(height: 24),
+          _SmsNotificationTile(
+            title: 'Budget Alerts',
+            description: 'Get notified when approaching limits',
+            icon: Icons.notifications_active,
+            onTap: () => _showBudgetAlertDialog(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMonthlySummaryDialog(BuildContext context, FinanceProvider provider) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.sms, color: Color(0xFFF16725)),
+            SizedBox(width: 12),
+            Text('Send Monthly Summary'),
+          ],
+        ),
+        content: const Text(
+          'Send your monthly expense summary via SMS?\n\nThis will include:\n• Total expenses\n• Total income\n• Savings\n• Top spending categories',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              
+              // Show loading
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+
+              try {
+                final monthTotal = provider.getThisMonthTotal();
+                final income = provider.income?.monthlyIncome ?? 0;
+                final savings = income - monthTotal;
+
+                await BanglalinkIntegrationService().sendMonthlySummarySms(
+                  summaryData: {
+                    'totalExpense': monthTotal,
+                    'totalIncome': income,
+                    'savings': savings,
+                  },
+                );
+
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('SMS sent successfully!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to send SMS: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF16725),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Send SMS'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBudgetAlertDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.notifications_active, color: Color(0xFFF16725)),
+            SizedBox(width: 12),
+            Text('Budget Alerts'),
+          ],
+        ),
+        content: const Text(
+          'Budget alert notifications are automatically sent when:\n\n• You reach 80% of your daily allowance\n• You exceed your daily budget\n• You approach monthly limits\n\nMake sure you have an active Banglalink number to receive these alerts.',
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF16725),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SmsNotificationTile extends StatelessWidget {
+  final String title;
+  final String description;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _SmsNotificationTile({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Icon(icon, color: const Color(0xFFF16725), size: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+          ],
+        ),
+      ),
     );
   }
 }

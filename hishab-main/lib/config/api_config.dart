@@ -1,5 +1,6 @@
 /// API Configuration for Hishab Backend
 /// Contains all endpoint URLs and configuration for Banglalink AppLink APIs
+library;
 
 class ApiConfig {
   // Base URL - Update this with your deployed backend URL

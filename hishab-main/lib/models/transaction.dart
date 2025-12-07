@@ -1,5 +1,6 @@
 /// Transaction Model
 /// Represents a CaaS (Charging-as-a-Service) transaction
+library;
 
 class Transaction {
   final String transactionId;

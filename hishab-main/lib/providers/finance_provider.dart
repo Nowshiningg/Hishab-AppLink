@@ -15,6 +15,9 @@ class FinanceProvider extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.light;
   String _userName = '';
   Locale _locale = const Locale('bn'); // Default to Bangla
+  int _totalPoints = 0;
+  List<Map<String, dynamic>> _rewards = [];
+  int _consecutiveDays = 0;
 
   List<Expense> get expenses => _expenses;
   List<CategoryModel> get categories => _categories;
@@ -25,6 +28,9 @@ class FinanceProvider extends ChangeNotifier {
   String get userName => _userName;
   String get firstName => _userName.split(' ').first;
   Locale get locale => _locale;
+  int get totalPoints => _totalPoints;
+  List<Map<String, dynamic>> get rewards => _rewards;
+  int get consecutiveDays => _consecutiveDays;
 
   // Initialize data
   Future<void> initialize() async {
@@ -38,6 +44,8 @@ class FinanceProvider extends ChangeNotifier {
       await loadCategories();
       await loadExpenses();
       await loadIncome();
+      await loadRewards();
+      await calculateDailyStreak();
     } catch (e) {
       debugPrint('Error initializing: $e');
     } finally {
@@ -120,6 +128,8 @@ class FinanceProvider extends ChangeNotifier {
   Future<void> addExpense(Expense expense) async {
     await _dbHelper.insertExpense(expense);
     await loadExpenses();
+    await calculateDailyStreak();
+    await checkBudgetGoals();
   }
 
   // Delete expense
@@ -307,6 +317,221 @@ class FinanceProvider extends ChangeNotifier {
   Future<void> clearAllData() async {
     await _dbHelper.clearAllData();
     await initialize();
+  }
+
+  // Load rewards
+  Future<void> loadRewards() async {
+    _rewards = await _dbHelper.getAllRewards();
+    _totalPoints = await _dbHelper.getTotalPoints();
+    notifyListeners();
+  }
+
+  // Add reward
+  Future<void> addReward(int points, String reason, String type) async {
+    final reward = {
+      'points': points,
+      'reason': reason,
+      'timestamp': DateTime.now().toIso8601String(),
+      'type': type, // 'earned' or 'redeemed'
+    };
+    await _dbHelper.insertReward(reward);
+    await loadRewards();
+  }
+
+  // Calculate daily streak
+  Future<void> calculateDailyStreak() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastTrackedDate = prefs.getString('last_tracked_date');
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    if (lastTrackedDate == null) {
+      // First time - initialize
+      _consecutiveDays = getTodayExpenses().isNotEmpty ? 1 : 0;
+      await prefs.setString('last_tracked_date', today.toIso8601String());
+      await prefs.setInt('consecutive_days', _consecutiveDays);
+      notifyListeners();
+      return;
+    }
+
+    final lastDate = DateTime.parse(lastTrackedDate);
+    final lastDay = DateTime(lastDate.year, lastDate.month, lastDate.day);
+    final daysDifference = today.difference(lastDay).inDays;
+
+    if (daysDifference == 0) {
+      // Same day - load saved streak
+      _consecutiveDays = prefs.getInt('consecutive_days') ?? 0;
+    } else if (daysDifference == 1) {
+      // Consecutive day
+      if (getTodayExpenses().isNotEmpty) {
+        _consecutiveDays = (prefs.getInt('consecutive_days') ?? 0) + 1;
+        await prefs.setString('last_tracked_date', today.toIso8601String());
+        await prefs.setInt('consecutive_days', _consecutiveDays);
+
+        // Award streak bonus
+        if (_consecutiveDays % 7 == 0) {
+          await addReward(50, 'Weekly tracking streak!', 'earned');
+        } else if (_consecutiveDays % 30 == 0) {
+          await addReward(200, 'Monthly tracking streak!', 'earned');
+        }
+      } else {
+        // Today has no expenses - keep current streak
+        _consecutiveDays = prefs.getInt('consecutive_days') ?? 0;
+      }
+    } else {
+      // Streak broken
+      _consecutiveDays = getTodayExpenses().isNotEmpty ? 1 : 0;
+      await prefs.setString('last_tracked_date', today.toIso8601String());
+      await prefs.setInt('consecutive_days', _consecutiveDays);
+    }
+
+    notifyListeners();
+  }
+
+  // Check and award budget goals
+  Future<void> checkBudgetGoals() async {
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final lastRewardCheck = prefs.getString('last_reward_check');
+
+    // Only check once per day
+    if (lastRewardCheck != null) {
+      final lastCheck = DateTime.parse(lastRewardCheck);
+      final lastCheckDay = DateTime(lastCheck.year, lastCheck.month, lastCheck.day);
+      if (today.isAtSameMomentAs(lastCheckDay)) {
+        return;
+      }
+    }
+
+    final dailyAllowance = getDailyAllowance();
+    final todayTotal = getTodayTotal();
+
+    if (dailyAllowance > 0) {
+      final percentage = (todayTotal / dailyAllowance) * 100;
+
+      if (percentage < 50) {
+        // Excellent budget discipline
+        await addReward(20, 'Stayed under 50% of daily budget!', 'earned');
+      } else if (percentage < 80) {
+        // Good budget discipline
+        await addReward(10, 'Stayed under 80% of daily budget!', 'earned');
+      } else if (percentage > 120) {
+        // Exceeded budget
+        await addReward(5, 'Exceeded daily budget', 'redeemed');
+      }
+    }
+
+    await prefs.setString('last_reward_check', today.toIso8601String());
+  }
+
+  // Redeem reward
+  Future<bool> redeemReward(String title, int pointsCost) async {
+    if (_totalPoints >= pointsCost) {
+      await addReward(pointsCost, 'Redeemed: $title', 'redeemed');
+      return true;
+    }
+    return false;
+  }
+
+  // Get available redemptions
+  List<Map<String, dynamic>> getAvailableRedemptions() {
+    return [
+      {
+        'title': '50 MB Data',
+        'pointsCost': 100,
+        'type': 'data',
+        'icon': 'signal_cellular_alt',
+      },
+      {
+        'title': '100 MB Data',
+        'pointsCost': 180,
+        'type': 'data',
+        'icon': 'signal_cellular_alt',
+      },
+      {
+        'title': '20 Minutes Talk Time',
+        'pointsCost': 150,
+        'type': 'minutes',
+        'icon': 'phone',
+      },
+      {
+        'title': '50 Minutes Talk Time',
+        'pointsCost': 300,
+        'type': 'minutes',
+        'icon': 'phone',
+      },
+      {
+        'title': '10% Bill Discount',
+        'pointsCost': 200,
+        'type': 'discount',
+        'icon': 'discount',
+      },
+      {
+        'title': '20% Bill Discount',
+        'pointsCost': 400,
+        'type': 'discount',
+        'icon': 'discount',
+      },
+    ];
+  }
+
+  // Category budget management
+  Future<void> setCategoryBudget(String categoryName, double budgetAmount) async {
+    final now = DateTime.now();
+    await _dbHelper.setCategoryBudget(categoryName, budgetAmount, now.month, now.year);
+    notifyListeners();
+  }
+
+  Future<double?> getCategoryBudget(String categoryName) async {
+    final now = DateTime.now();
+    return await _dbHelper.getCategoryBudget(categoryName, now.month, now.year);
+  }
+
+  Future<Map<String, double>> getAllCategoryBudgets() async {
+    final now = DateTime.now();
+    return await _dbHelper.getAllCategoryBudgets(now.month, now.year);
+  }
+
+  Future<double> getCategorySpending(String categoryName) async {
+    final now = DateTime.now();
+    final startOfMonth = DateTime(now.year, now.month, 1);
+    final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+
+    final categoryBreakdown = await _dbHelper.getExpensesByCategory(startOfMonth, endOfMonth);
+    return categoryBreakdown[categoryName] ?? 0.0;
+  }
+
+  Future<Map<String, Map<String, double>>> getCategoryBudgetStatus() async {
+    final budgets = await getAllCategoryBudgets();
+    final now = DateTime.now();
+    final startOfMonth = DateTime(now.year, now.month, 1);
+    final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+    final spending = await _dbHelper.getExpensesByCategory(startOfMonth, endOfMonth);
+
+    Map<String, Map<String, double>> status = {};
+
+    for (var category in budgets.keys) {
+      final budget = budgets[category]!;
+      final spent = spending[category] ?? 0.0;
+      final remaining = budget - spent;
+      final percentage = budget > 0 ? (spent / budget) * 100 : 0.0;
+
+      status[category] = {
+        'budget': budget,
+        'spent': spent,
+        'remaining': remaining,
+        'percentage': percentage as double,
+      };
+    }
+
+    return status;
+  }
+
+  Future<void> deleteCategoryBudget(String categoryName) async {
+    final now = DateTime.now();
+    await _dbHelper.deleteCategoryBudget(categoryName, now.month, now.year);
+    notifyListeners();
   }
 }
 
