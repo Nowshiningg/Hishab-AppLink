@@ -21,14 +21,14 @@ class SmsApiService {
       
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: ApiConfig.getAuthHeaders(),
         body: jsonEncode({
           'phoneNumber': phoneNumber,
           'message': message,
         }),
       ).timeout(ApiConfig.connectionTimeout);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         return jsonResponse['success'] == true;
       }
@@ -54,14 +54,14 @@ class SmsApiService {
       
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: ApiConfig.getAuthHeaders(),
         body: jsonEncode({
           'phoneNumber': phoneNumber,
           'userId': userId,
         }),
       ).timeout(ApiConfig.connectionTimeout);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         if (jsonResponse['success'] == true) {
           return jsonResponse['data'] as Map<String, dynamic>;
@@ -89,7 +89,7 @@ class SmsApiService {
       
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: ApiConfig.getAuthHeaders(),
         body: jsonEncode({
           'requestId': requestId,
           'otp': otp,
@@ -98,10 +98,7 @@ class SmsApiService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        if (jsonResponse['success'] == true) {
-          final data = jsonResponse['data'] as Map<String, dynamic>;
-          return data['verified'] == true;
-        }
+        return jsonResponse['success'] == true;
       }
       
       return false;
@@ -127,7 +124,7 @@ class SmsApiService {
       
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: ApiConfig.getAuthHeaders(),
         body: jsonEncode({
           'phoneNumber': phoneNumber,
           'userId': userId,
@@ -135,7 +132,7 @@ class SmsApiService {
         }),
       ).timeout(ApiConfig.connectionTimeout);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         return jsonResponse['success'] == true;
       }

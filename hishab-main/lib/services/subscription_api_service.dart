@@ -22,14 +22,15 @@ class SubscriptionApiService {
       
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: ApiConfig.getAuthHeaders(),
         body: jsonEncode({
           'phoneNumber': phoneNumber,
           'userId': userId,
+          'plan': 'premium_daily',
         }),
       ).timeout(ApiConfig.connectionTimeout);
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 201 || response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         if (jsonResponse['success'] == true) {
           return Subscription.fromJson(jsonResponse['data']);
@@ -55,7 +56,7 @@ class SubscriptionApiService {
       
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: ApiConfig.getAuthHeaders(),
         body: jsonEncode({
           'userId': userId,
         }),
@@ -89,7 +90,7 @@ class SubscriptionApiService {
       
       final response = await http.get(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: ApiConfig.getAuthHeaders(),
       ).timeout(ApiConfig.connectionTimeout);
 
       if (response.statusCode == 200) {

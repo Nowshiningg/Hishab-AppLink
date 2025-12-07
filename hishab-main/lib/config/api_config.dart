@@ -9,6 +9,10 @@ class ApiConfig {
   // For local development, use:
   // static const String baseUrl = 'http://localhost:3001';
   
+  // API Key - Stored as environment variable on Render
+  // This key is used for authentication with backend
+  static const String apiKey = 'YOUR_API_KEY_HERE';
+  
   // API Endpoints
   static const String subscriptionBase = '/api/banglalink/subscription';
   static const String caasBase = '/api/banglalink/caas';
@@ -63,5 +67,14 @@ class ApiConfig {
   /// Get full URL for an endpoint
   static String getFullUrl(String endpoint) {
     return '$baseUrl$endpoint';
+  }
+  
+  /// Get common headers for all API requests with authentication
+  static Map<String, String> getAuthHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-API-Key': apiKey,
+    };
   }
 }
