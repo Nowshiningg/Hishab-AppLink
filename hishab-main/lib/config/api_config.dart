@@ -4,10 +4,10 @@ library;
 
 class ApiConfig {
   // Base URL - Update this with your deployed backend URL
-  static const String baseUrl = 'http://hishab-backend.onrender.com';
+  static const String baseUrl = 'https://hishab-backend.onrender.com';
   
-  // For production, use your deployed URL:
-  // static const String baseUrl = 'https://your-backend-url.vercel.app';
+  // For local development, use:
+  // static const String baseUrl = 'http://localhost:3001';
   
   // API Endpoints
   static const String subscriptionBase = '/api/banglalink/subscription';
