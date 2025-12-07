@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../services/banglalink_integration_service.dart';
-import '../../models/subscription.dart';
 
 class PremiumSubscriptionScreen extends StatefulWidget {
   const PremiumSubscriptionScreen({super.key});
