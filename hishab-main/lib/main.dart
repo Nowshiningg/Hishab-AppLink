@@ -6,11 +6,15 @@ import 'providers/finance_provider.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'localization/app_localizations.dart';
+import 'services/notification_service.dart';
 import 'services/banglalink_integration_service.dart';
 import 'services/update_checker_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize notification service
+  await NotificationService().initialize();
   
   // Initialize Banglalink Integration Service
   // Note: User ID and phone number will be set when user completes onboarding
@@ -25,7 +29,7 @@ void main() async {
       phoneNumber: phoneNumber,
     );
   }
-  
+
   runApp(const MyApp());
 }
 

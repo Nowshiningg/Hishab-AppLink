@@ -76,6 +76,28 @@ class DatabaseHelper {
       )
     ''');
 
+    // Create rewards table
+    await db.execute('''
+      CREATE TABLE rewards (
+        id $idType,
+        points INTEGER NOT NULL,
+        reason $textType,
+        timestamp $textType,
+        type $textType
+      )
+    ''');
+
+    // Create category budgets table
+    await db.execute('''
+      CREATE TABLE category_budgets (
+        id $idType,
+        category_name $textType,
+        budget_amount $realType,
+        month $textType,
+        year INTEGER NOT NULL
+      )
+    ''');
+
     // Insert default categories
     await _insertDefaultCategories(db);
   }
@@ -229,11 +251,107 @@ class DatabaseHelper {
     );
   }
 
+  // Reward operations
+  Future<int> insertReward(Map<String, dynamic> reward) async {
+    final db = await database;
+    return await db.insert('rewards', reward);
+  }
+
+  Future<List<Map<String, dynamic>>> getAllRewards() async {
+    final db = await database;
+    return await db.query('rewards', orderBy: 'timestamp DESC');
+  }
+
+  Future<int> getTotalPoints() async {
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT SUM(CASE WHEN type = "earned" THEN points ELSE -points END) as total FROM rewards',
+    );
+    return (result.first['total'] as int?) ?? 0;
+  }
+
+  Future<List<Map<String, dynamic>>> getRecentRewards({int limit = 10}) async {
+    final db = await database;
+    return await db.query(
+      'rewards',
+      orderBy: 'timestamp DESC',
+      limit: limit,
+    );
+  }
+
+  // Category budget operations
+  Future<int> setCategoryBudget(String categoryName, double budgetAmount, int month, int year) async {
+    final db = await database;
+
+    // Check if budget already exists
+    final existing = await db.query(
+      'category_budgets',
+      where: 'category_name = ? AND month = ? AND year = ?',
+      whereArgs: [categoryName, month.toString().padLeft(2, '0'), year],
+    );
+
+    if (existing.isNotEmpty) {
+      // Update existing budget
+      return await db.update(
+        'category_budgets',
+        {'budget_amount': budgetAmount},
+        where: 'category_name = ? AND month = ? AND year = ?',
+        whereArgs: [categoryName, month.toString().padLeft(2, '0'), year],
+      );
+    } else {
+      // Insert new budget
+      return await db.insert('category_budgets', {
+        'category_name': categoryName,
+        'budget_amount': budgetAmount,
+        'month': month.toString().padLeft(2, '0'),
+        'year': year,
+      });
+    }
+  }
+
+  Future<double?> getCategoryBudget(String categoryName, int month, int year) async {
+    final db = await database;
+    final result = await db.query(
+      'category_budgets',
+      where: 'category_name = ? AND month = ? AND year = ?',
+      whereArgs: [categoryName, month.toString().padLeft(2, '0'), year],
+    );
+
+    if (result.isEmpty) return null;
+    return result.first['budget_amount'] as double;
+  }
+
+  Future<Map<String, double>> getAllCategoryBudgets(int month, int year) async {
+    final db = await database;
+    final result = await db.query(
+      'category_budgets',
+      where: 'month = ? AND year = ?',
+      whereArgs: [month.toString().padLeft(2, '0'), year],
+    );
+
+    Map<String, double> budgets = {};
+    for (var row in result) {
+      budgets[row['category_name'] as String] = row['budget_amount'] as double;
+    }
+    return budgets;
+  }
+
+  Future<int> deleteCategoryBudget(String categoryName, int month, int year) async {
+    final db = await database;
+    return await db.delete(
+      'category_budgets',
+      where: 'category_name = ? AND month = ? AND year = ?',
+      whereArgs: [categoryName, month.toString().padLeft(2, '0'), year],
+    );
+  }
+
   // Clear all data
   Future<void> clearAllData() async {
     final db = await database;
     await db.delete('expenses');
     await db.delete('income');
+    await db.delete('rewards');
+    await db.delete('category_budgets');
     // Don't delete categories, just reset them
     await db.delete('categories');
     await _insertDefaultCategories(db);
