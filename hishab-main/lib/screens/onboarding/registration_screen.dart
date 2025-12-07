@@ -61,9 +61,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         setState(() {
           _showOtpField = true;
           _otpRemainingSeconds = result['expiresIn'] ?? 300;
-          _successMessage = '✅ OTP sent to ${_phoneController.text.trim()}\n📱 Demo OTP: ${result['otp']} (shown for testing only)';
+          _successMessage = '✅ OTP sent to 0${_phoneController.text.trim()}';
           _errorMessage = null;
         });
+        // Print OTP to console for testing (will appear in Logcat/Debug Console)
+        print('📱 DEMO OTP: ${result['otp']}');
         _startOtpTimer();
       } else {
         setState(() {
@@ -175,9 +177,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         _otpController.clear();
         setState(() {
           _otpRemainingSeconds = result['expiresIn'] ?? 300;
-          _successMessage = '✅ New OTP sent\n📱 Demo OTP: ${result['otp']}';
+          _successMessage = '✅ New OTP sent';
           _errorMessage = null;
         });
+        // Print OTP to console for testing (will appear in Logcat/Debug Console)
+        print('📱 DEMO OTP: ${result['otp']}');
         _startOtpTimer();
       } else {
         setState(() {
@@ -401,7 +405,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: InputDecoration(
-                    hintText: '01xxxxxxxxx (11 digits)',
+                    hintText: '1xxxxxxxxx (10 digits)',
                     hintStyle: TextStyle(
                       color: Colors.grey[400],
                       fontWeight: FontWeight.normal,
