@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'providers/finance_provider.dart';
 import 'screens/onboarding/onboarding_screen.dart';
+import 'screens/onboarding/registration_screen.dart';
+import 'screens/onboarding/income_setup_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'localization/app_localizations.dart';
 import 'services/notification_service.dart';
@@ -117,6 +119,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     final prefs = await SharedPreferences.getInstance();
     final hasSeenOnboarding = prefs.getBool('onboarding_complete') ?? false;
+    final isUserRegistered = prefs.getBool('user_registered') ?? false;
     final hasSetIncome = prefs.getBool('income_set') ?? false;
 
     if (!mounted) return;
@@ -125,16 +128,26 @@ class _SplashScreenState extends State<SplashScreen> {
     UpdateCheckerService.checkForUpdates(context, '1.0.0');
 
     if (!hasSeenOnboarding) {
+      // First time: show onboarding
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const OnboardingScreen()),
       );
-    } else if (!hasSetIncome) {
-      // If they've seen onboarding but haven't set income, go to home
-      // (they might have skipped income setup)
+    } else if (!isUserRegistered) {
+      // After onboarding but before registration: show registration
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(
+          builder: (context) => const RegistrationScreen(),
+        ),
+      );
+    } else if (!hasSetIncome) {
+      // After registration but before income setup: show income setup
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const IncomeSetupScreen(),
+        ),
       );
     } else {
+      // Everything complete: go to home
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
