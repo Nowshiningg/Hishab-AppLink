@@ -83,6 +83,7 @@ class AppLocalizations {
       'voiceExpense': 'Voice Expense',
       'tapToSpeak': 'Tap to speak',
       'listening': 'Listening...',
+      'voiceInstructions': 'Note Expense by Speaking',
       'speechNotAvailable': 'Speech recognition not available',
       'couldNotUnderstand': 'Could not understand',
       'example': 'Example',
@@ -208,6 +209,9 @@ class AppLocalizations {
       // Budget Module
       'budgetManagement': 'Budget Management',
       'setCategoryBudget': 'Set Category Budget',
+      'categoryBudgets': 'Budget Categories',
+      'manageCategoryBudgets': 'Manage Budget Categories',
+      'setBudgetsForCategories': 'Set Category-wise Budget',
       'categoryBudget': 'Category Budget',
       'monthlyLimit': 'Monthly Limit',
       'weeklyLimit': 'Weekly Limit',
@@ -225,6 +229,7 @@ class AppLocalizations {
       'overallStatus': 'Overall Status',
       'totalBudget': 'Total Budget',
       'savingsStatus': 'Savings Status',
+      'noBudgetSet': 'No budget set',
 
       // Daily Reminders
       'reminders': 'Reminders',
@@ -238,6 +243,10 @@ class AppLocalizations {
       'enableBudgetAlerts': 'Budget Alerts',
       'nextReminder': 'Next Reminder',
       'reminderTime': 'Reminder Time',
+      'dailyReminder': 'Daily Reminder',
+      'reminderDisabled': 'Reminder is disabled',
+      'changeReminderTime': 'Change Reminder Time',
+      'reminderScheduled': 'Reminder scheduled successfully',
       'updateYourExpenses': 'Update Your Expenses',
       'dailyReview': 'Daily Review',
       'weeklyReview': 'Weekly Review',
@@ -255,7 +264,11 @@ class AppLocalizations {
       'progressToMilestone': 'Progress to Milestone',
       'budgetMastBadge': 'Budget Master Badge',
       'consistencyStreak': 'Consistency Streak',
+      'daysStreak': 'Days Streak',
       'daysInRow': 'days in a row',
+      'totalPoints': 'Total Points',
+      'redeemRewards': 'Redeem Rewards',
+      'recentActivity': 'Recent Activity',
       'rewardingBehavior': 'Keep building great habits!',
 
       // Banglalink Integration
@@ -363,7 +376,8 @@ class AppLocalizations {
       'voiceExpense': 'ভয়েস খরচ',
       'tapToSpeak': 'মাইক টিপে বলুন',
       'listening': 'শুনছি...',
-      'speechNotAvailable': 'স্পিচ রিকগনিশন উপলব্ধ নেই',
+      'voiceInstructions': 'কথা বলে খরচ নোট করুন',
+      'speechNotAvailable': 'স্পীচ রিকগনিশন উপলব্ধ নেই',
       'couldNotUnderstand': 'খরচ বুঝতে পারিনি',
       'example': 'উদাহরণ',
       'manualEntry': 'ম্যানুয়ালি যোগ করুন',
@@ -488,6 +502,9 @@ class AppLocalizations {
       // Budget Module
       'budgetManagement': 'বাজেট পরিচালনা',
       'setCategoryBudget': 'বাজেট নির্ধারণ করুন',
+      'categoryBudgets': 'বাজেট বিভাগসমূহ',
+      'manageCategoryBudgets': 'বাজেট বিভাগ পরিচালনা করুন',
+      'setBudgetsForCategories': 'বিভাগ অনুযায়ী বাজেট নির্ধারণ করুন',
       'categoryBudget': 'বিভাগ বাজেট',
       'monthlyLimit': 'মাসিক সীমা',
       'weeklyLimit': 'সাপ্তাহিক সীমা',
@@ -504,6 +521,9 @@ class AppLocalizations {
       'budgetRecommendations': 'বাজেট সুপারিশ',
       'overallStatus': 'সামগ্রিক অবস্থা',
       'totalBudget': 'মোট বাজেট',
+      'savingsStatus': 'সঞ্চয় স্ট্যাটাস',
+      'noBudgetSet': 'কোন বাজেট সেট নেই',
+      'totalBudget': 'মোট বাজেট',
       'savingsStatus': 'সঞ্চয় অবস্থা',
 
       // Daily Reminders
@@ -518,6 +538,10 @@ class AppLocalizations {
       'enableBudgetAlerts': 'বাজেট সতর্কতা',
       'nextReminder': 'পরবর্তী রিমাইন্ডার',
       'reminderTime': 'রিমাইন্ডার সময়',
+      'dailyReminder': 'দৈনিক রিমাইন্ডার',
+      'reminderDisabled': 'রিমাইন্ডার নিষ্ক্রিয়',
+      'changeReminderTime': 'রিমাইন্ডার সময় পরিবর্তন করুন',
+      'reminderScheduled': 'রিমাইন্ডার সফলভাবে নির্ধারিত হয়েছে',
       'updateYourExpenses': 'আপনার খরচ আপডেট করুন',
       'dailyReview': 'দৈনিক পর্যালোচনা',
       'weeklyReview': 'সাপ্তাহিক পর্যালোচনা',
@@ -535,7 +559,11 @@ class AppLocalizations {
       'progressToMilestone': 'মাইলফলকের দিকে অগ্রগতি',
       'budgetMastBadge': 'বাজেট মাস্টার ব্যাজ',
       'consistencyStreak': 'ধারাবাহিকতা স্ট্রিক',
+      'daysStreak': 'দিনের স্ট্রিক',
       'daysInRow': 'ধারাবাহিক দিন',
+      'totalPoints': 'মোট পয়েন্ট',
+      'redeemRewards': 'রিওয়ার্ড রিডিম করুন',
+      'recentActivity': 'সাম্প্রতিক কার্যকলাপ',
       'rewardingBehavior': 'দুর্দান্ত অভ্যাস গড়ে তুলতে থাকুন!',
 
       // Banglalink Integration

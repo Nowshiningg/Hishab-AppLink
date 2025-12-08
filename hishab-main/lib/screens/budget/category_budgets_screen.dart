@@ -171,21 +171,52 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
                       Text(
                         loc.translateCategory(categoryName),
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 17,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       if (hasBudget) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.account_balance_wallet_outlined,
+                              size: 14,
+                              color: color,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '৳${NumberFormat('#,##0').format(status['budget'])}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: color,
+                              ),
+                            ),
+                            Text(
+                              ' ${loc.translate('budgetLimit')}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withOpacity(0.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (!hasBudget) ...[
                         const SizedBox(height: 4),
                         Text(
-                          '৳${NumberFormat('#,##0').format(status['budget'])} ${loc.translate('budgetLimit')}',
+                          loc.translate('noBudgetSet'),
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.6),
+                                .withOpacity(0.5),
                           ),
                         ),
                       ],
@@ -212,57 +243,103 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          loc.translate('budgetUsed'),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.6),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.trending_up,
+                                size: 14,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withOpacity(0.5),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                loc.translate('budgetUsed'),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withOpacity(0.6),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '৳${NumberFormat('#,##0').format(status['spent'])}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
+                          const SizedBox(height: 6),
+                          Text(
+                            '৳${NumberFormat('#,##0').format(status['spent'])}',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: color,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          loc.translate('budgetRemaining'),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.6),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: status['remaining']! < 0
+                            ? Colors.red.withOpacity(0.05)
+                            : const Color(0xFF4ECDC4).withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                status['remaining']! < 0 ? Icons.warning_amber : Icons.account_balance_wallet,
+                                size: 14,
+                                color: status['remaining']! < 0
+                                    ? Colors.red.withOpacity(0.7)
+                                    : const Color(0xFF4ECDC4).withOpacity(0.7),
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  loc.translate('budgetRemaining'),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withOpacity(0.6),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '৳${NumberFormat('#,##0').format(status['remaining'])}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: status['remaining']! < 0
-                                ? Colors.red
-                                : const Color(0xFF4ECDC4),
+                          const SizedBox(height: 6),
+                          Text(
+                            '৳${NumberFormat('#,##0').format(status['remaining'])}',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: status['remaining']! < 0
+                                  ? Colors.red
+                                  : const Color(0xFF4ECDC4),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],

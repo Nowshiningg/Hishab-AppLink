@@ -173,11 +173,12 @@ class _VoiceExpenseScreenState extends State<VoiceExpenseScreen> with SingleTick
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 30),
                     // Microphone button
-                    GestureDetector(
-                      onTap: _isListening ? _stopListening : _startListening,
-                      child: Container(
+                    Center(
+                      child: GestureDetector(
+                        onTap: _isListening ? _stopListening : _startListening,
+                        child: Container(
                         width: 180,
                         height: 180,
                         decoration: BoxDecoration(
@@ -223,64 +224,85 @@ class _VoiceExpenseScreenState extends State<VoiceExpenseScreen> with SingleTick
                                 child: Icon(Icons.mic, size: 80, color: Colors.white),
                               ),
                       ),
+                      ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     Text(
                       _isListening
                           ? loc.translate('listening')
                           : loc.translate('tapToSpeak'),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      loc.translate('voiceInstructions'),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: _isListening ? const Color(0xFFF16725) : const Color(0xFF4ECDC4),
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Text(
+                        loc.translate('voiceInstructions'),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 48),
 
                     // Transcribed text
                     if (_transcribedText.isNotEmpty) ...[
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(16),
+                          color: const Color(0xFF4ECDC4).withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(0xFF4ECDC4).withOpacity(0.3),
+                            color: const Color(0xFF4ECDC4).withOpacity(0.4),
                             width: 2,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF4ECDC4).withOpacity(0.15),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.hearing, color: Color(0xFF4ECDC4), size: 20),
-                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF4ECDC4).withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.hearing, color: Color(0xFF4ECDC4), size: 20),
+                                ),
+                                const SizedBox(width: 12),
                                 Text(
                                   loc.translate('heard'),
                                   style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
                                     color: Color(0xFF4ECDC4),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 16),
                             Text(
                               _transcribedText,
                               style: TextStyle(
                                 fontSize: 16,
+                                height: 1.5,
                                 color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
@@ -294,39 +316,53 @@ class _VoiceExpenseScreenState extends State<VoiceExpenseScreen> with SingleTick
                     if (_parsedExpense != null) ...[
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              const Color(0xFFF16725).withOpacity(0.1),
-                              const Color(0xFFF16725).withOpacity(0.05),
+                              const Color(0xFFF16725).withOpacity(0.12),
+                              const Color(0xFFF16725).withOpacity(0.06),
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(0xFFF16725).withOpacity(0.3),
+                            color: const Color(0xFFF16725).withOpacity(0.4),
                             width: 2,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFF16725).withOpacity(0.2),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Column(
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.check_circle, color: Color(0xFFF16725), size: 20),
-                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF16725).withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.check_circle, color: Color(0xFFF16725), size: 20),
+                                ),
+                                const SizedBox(width: 12),
                                 Text(
                                   loc.translate('understood'),
                                   style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
                                     color: Color(0xFFF16725),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 20),
                             _buildDetailRow(loc.translate('amount'), '৳${NumberFormat('#,##0.00').format(_parsedExpense!.amount)}'),
                             const SizedBox(height: 12),
                             _buildDetailRow(
@@ -346,15 +382,28 @@ class _VoiceExpenseScreenState extends State<VoiceExpenseScreen> with SingleTick
 
                       // Category selector if not detected
                       if (_parsedExpense!.category == null) ...[
-                        Text(
-                          loc.translate('selectCategory'),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface,
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.category_outlined,
+                                size: 20,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                loc.translate('selectCategory'),
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                         Wrap(
                           spacing: 12,
                           runSpacing: 12,
@@ -370,22 +419,30 @@ class _VoiceExpenseScreenState extends State<VoiceExpenseScreen> with SingleTick
                                 });
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                                 decoration: BoxDecoration(
-                                  color: category.color.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: category.color, width: 1),
+                                  color: category.color.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: category.color, width: 2),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: category.color.withOpacity(0.2),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(category.icon, color: category.color, size: 20),
-                                    const SizedBox(width: 8),
+                                    Icon(category.icon, color: category.color, size: 22),
+                                    const SizedBox(width: 10),
                                     Text(
                                       loc.translateCategory(category.name),
                                       style: TextStyle(
                                         color: category.color,
-                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
@@ -405,21 +462,40 @@ class _VoiceExpenseScreenState extends State<VoiceExpenseScreen> with SingleTick
             if (_parsedExpense != null && _parsedExpense!.category != null)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, -5),
+                    ),
+                  ],
+                ),
                 child: ElevatedButton(
                   onPressed: _saveExpense,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFF16725),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    elevation: 4,
+                    shadowColor: const Color(0xFFF16725).withOpacity(0.4),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: Text(
-                    loc.translate('saveExpense'),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.check_circle, color: Colors.white, size: 24),
+                      const SizedBox(width: 12),
+                      Text(
+                        loc.translate('saveExpense'),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -430,25 +506,34 @@ class _VoiceExpenseScreenState extends State<VoiceExpenseScreen> with SingleTick
   }
 
   Widget _buildDetailRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.65),
+            ),
           ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
+          const SizedBox(width: 16),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
