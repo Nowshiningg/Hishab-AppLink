@@ -1,144 +1,79 @@
-# Hishab - Finance Tracking App
+# Hishab - Personal Finance Tracker
 
-A beautiful and intuitive Flutter finance tracking application designed to help users manage their daily expenses and stay within their budget.
+<div align="center">
+  <img src="hishab-main/assets/logo_hishab.png" alt="Hishab Logo" width="120"/>
+  
+  ### আপনার খরচ ট্র্যাক করুন
+  
+  A beautiful, feature-rich expense tracking app built with Flutter that helps you manage your daily finances with ease.
+  
+  [![Flutter](https://img.shields.io/badge/Flutter-3.24.4-blue.svg)](https://flutter.dev/)
+  [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+</div>
 
-## 🎯 Features
+---
 
-### Phase 1 - Core Foundation (Current)
+## ✨ Features
 
-#### 1. **Onboarding Experience**
-- Beautiful 3-screen onboarding flow introducing app features
-- Monthly income setup screen
-- Skip options for flexible first-time experience
+### 🎯 Core Features
+- **Smart Expense Tracking**: Add, edit, and categorize your daily expenses
+- **Multi-Language Support**: Available in English (EN) and Bengali (বাংলা)
+- **Dark Mode**: Eye-friendly dark theme with automatic switching
+- **Daily Budget Tracking**: Set daily allowances and monitor spending status
+- **Category Management**: Organize expenses with customizable categories and icons
 
-#### 2. **Home Dashboard**
-- **Today's Spending**: Prominently displayed at the top
-- **Daily Allowance**: Calculated as (Monthly Income - Total Spent) ÷ Days Remaining
-- **Color-Coded Status Indicator**:
-  - 🟢 Green: Under 80% of daily allowance
-  - 🟡 Yellow: 80-100% of daily allowance
-  - 🔴 Red: Over 100% of daily allowance
-- **Quick Stats Cards**:
-  - This Week's total spending
-  - This Month's total spending
-  - Monthly income, spent, and remaining balance
+### 🤖 AI-Powered Features
+- **Voice Expense Entry**: Add expenses hands-free using voice commands
+- **AI Chatbot Assistant**: Get financial insights and spending analysis
+- **Smart Parsing**: Automatically extracts amount, category, and notes from voice input
 
-#### 3. **Manual Expense Entry**
-- Simple, clean form with validation
-- Fields: Amount, Category, Note (optional), Date
-- Category selection with visual chips
-- Real-time validation
-- Success confirmation
-- Currency: ৳ (Bangladeshi Taka)
+### 📊 Analytics & Insights
+- **Category Breakdown**: Visual pie charts showing spending by category
+- **Weekly/Monthly Summaries**: Track spending trends over time
+- **Budget Alerts**: Get notified when approaching budget limits
+- **Category-wise Budgets**: Set individual budgets for different expense categories
 
-#### 4. **Expense List View**
-- Chronologically organized expenses (newest first)
-- Grouped by date: "Today", "Yesterday", specific dates
-- Daily totals for each date group
-- Swipe-to-delete with confirmation dialog
-- Category icons and colors for easy identification
-- Empty state with helpful message
+### 🎁 Rewards System
+- **Points & Streaks**: Earn points for consistent expense tracking
+- **Daily Streak Tracking**: Build habits with streak counters
+- **Achievement Badges**: Unlock rewards for milestones
 
-#### 5. **Category Breakdown**
-- Interactive pie chart showing monthly spending by category
-- Percentage and amount for each category
-- Detailed list view with progress bars
-- Only displays categories with expenses
-- Monthly total at the top
+### 💎 Premium Features (via Banglalink Integration)
+- **SMS Integration**: Automatic expense tracking from SMS
+- **Monthly Reports**: Detailed PDF expense reports
+- **Priority Support**: Enhanced customer assistance
+- **Ad-free Experience**: Enjoy uninterrupted tracking
 
-#### 6. **Settings Screen**
-- **Monthly Income Management**: Edit your income anytime
-- **Category Management**: 
-  - View all categories
-  - Add custom categories with icons and colors
-  - Default categories: Food, Transport, Shopping, Bills, Entertainment, Health, Other
-- **Data Management**: Clear all data with confirmation
-- **About Section**: App version and description
+### 🔔 Smart Notifications
+- **Daily Reminders**: Never forget to log expenses
+- **Budget Alerts**: Real-time notifications for budget status
+- **Monthly Summary SMS**: Get spending reports via SMS
 
-## 🏗️ Technical Architecture
+---
 
-### Project Structure
-```
-lib/
-├── database/
-│   └── database_helper.dart      # SQLite database management
-├── models/
-│   ├── expense.dart              # Expense data model
-│   ├── income.dart               # Income data model
-│   └── category_model.dart       # Category data model
-├── providers/
-│   └── finance_provider.dart     # State management (Provider)
-├── screens/
-│   ├── onboarding/
-│   │   ├── onboarding_screen.dart
-│   │   └── income_setup_screen.dart
-│   ├── home/
-│   │   └── home_screen.dart      # Main dashboard
-│   ├── expense/
-│   │   ├── add_expense_screen.dart
-│   │   └── expense_list_screen.dart
-│   ├── categories/
-│   │   └── category_breakdown_screen.dart
-│   └── settings/
-│       └── settings_screen.dart
-└── main.dart                     # App entry point
-```
+## 📱 Screenshots
 
-### Database Schema
+| Home Screen | Voice Entry | Analytics | Chatbot |
+|------------|-------------|-----------|---------|
+| Beautiful dashboard with spending overview | Hands-free expense logging | Visual spending breakdown | AI financial assistant |
 
-#### Expenses Table
-```sql
-CREATE TABLE expenses (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  amount REAL NOT NULL,
-  category TEXT NOT NULL,
-  note TEXT,
-  date TEXT NOT NULL,
-  timestamp TEXT NOT NULL
-)
-```
-
-#### Income Table
-```sql
-CREATE TABLE income (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  monthly_income REAL NOT NULL,
-  date_set TEXT NOT NULL
-)
-```
-
-#### Categories Table
-```sql
-CREATE TABLE categories (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  icon TEXT NOT NULL,
-  color TEXT NOT NULL
-)
-```
-
-### Technologies Used
-- **Framework**: Flutter 3.9.2+
-- **State Management**: Provider (^6.1.1)
-- **Database**: SQLite (sqflite ^2.3.0)
-- **Charts**: FL Chart (^0.65.0)
-- **Date Formatting**: intl (^0.19.0)
-- **Local Storage**: SharedPreferences (^2.2.2)
-- **Path Management**: path_provider (^2.1.1)
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Flutter SDK 3.9.2 or higher
-- Dart SDK
-- Android Studio / VS Code
-- Android device or emulator
+- Flutter SDK 3.24.4 or higher
+- Dart SDK 3.7.0 or higher
+- Android Studio / VS Code with Flutter extensions
+- Android device or emulator (API level 21+)
+- iOS device or simulator (iOS 12.0+)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   cd hishab
+   git clone https://github.com/Nowshiningg/Hishab-AppLink.git
+   cd hishab-main
    ```
 
 2. **Install dependencies**
@@ -146,144 +81,215 @@ CREATE TABLE categories (
    flutter pub get
    ```
 
-3. **Run the app**
+3. **Generate launcher icons**
+   ```bash
+   flutter pub run flutter_launcher_icons
+   ```
+
+4. **Run the app**
    ```bash
    flutter run
    ```
 
-## 💡 Key Features Explained
+### Building for Production
 
-### Smart Daily Allowance Calculation
-The app intelligently calculates your daily spending limit:
-```
-Daily Allowance = (Monthly Income - Total Spent This Month) ÷ Days Remaining
-```
-This dynamic calculation adjusts as you spend, helping you stay on budget.
-
-### Color-Coded Spending Status
-Visual indicators help you quickly understand your spending:
-- **Green**: You're doing great! Under 80% of your daily allowance
-- **Yellow**: Caution! Between 80-100% of your daily allowance  
-- **Red**: Over budget! Exceeding your daily allowance
-
-### Data Persistence
-All data is stored locally using SQLite:
-- ✅ No internet required
-- ✅ Fast and reliable
-- ✅ Privacy-focused (your data never leaves your device)
-- ✅ No cloud sync (Phase 1)
-
-## 🎨 Design Philosophy
-
-### Material Design 3
-- Clean, modern interface
-- Calming color palette (blues, greens, whites)
-- Consistent spacing and padding
-- Smooth transitions and animations
-
-### User Experience Priorities
-1. **Simplicity**: Easy to understand and use
-2. **Speed**: Quick expense entry (< 10 seconds)
-3. **Clarity**: Clear visual hierarchy
-4. **Feedback**: Immediate visual confirmation of actions
-
-## 📱 App Flow
-
-1. **First Launch**
-   - Splash screen
-   - Onboarding (3 screens)
-   - Income setup
-   - Navigate to dashboard
-
-2. **Typical Usage**
-   - View dashboard (spending status)
-   - Tap (+) to add expense
-   - Select category, enter amount
-   - Save and return to dashboard
-   - Check weekly/monthly totals
-   - Review category breakdown
-
-3. **Management**
-   - Edit monthly income in settings
-   - Add custom categories
-   - View all expenses in list
-   - Delete expenses with swipe gesture
-
-## 🔐 Data Management
-
-### Local Storage
-- All data stored in SQLite database
-- Shared Preferences for app state (onboarding, etc.)
-- Database location: App's documents directory
-
-### Clear Data
-Users can clear all data from Settings:
-- Deletes all expenses
-- Deletes income records
-- Resets categories to defaults
-- Requires confirmation dialog
-
-## 🐛 Error Handling
-
-- Input validation on all forms
-- Confirmation dialogs for destructive actions
-- User-friendly error messages
-- Graceful handling of edge cases
-
-## 🔮 Future Enhancements (Phase 2+)
-
-Potential features for future releases:
-- ☁️ Cloud sync across devices
-- 📊 Advanced analytics and insights
-- 🏷️ Tags and custom filters
-- 📸 Receipt photo capture
-- 💰 Multiple currency support
-- 📅 Budget planning tools
-- 📈 Spending trends and predictions
-- 🔔 Spending limit notifications
-- 📤 Export to CSV/PDF
-- 🌙 Dark mode
-- 🌐 Multi-language support
-
-## 📄 License
-
-This project is private and not licensed for public use.
-
-## 👨‍💻 Development
-
-### Building for Release
-
-**Android APK**:
+**Android APK:**
 ```bash
 flutter build apk --release
 ```
 
-**Android App Bundle**:
+**iOS:**
 ```bash
-flutter build appbundle --release
+flutter build ios --release
 ```
-
-### Testing
-```bash
-flutter test
-```
-
-### Code Analysis
-```bash
-flutter analyze
-```
-
-## 🤝 Contributing
-
-This is a private project. Contributions are not accepted at this time.
-
-## 📞 Support
-
-For issues or questions, please contact the development team.
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: November 2025  
-**Platform**: Android (iOS support coming soon)
+## 🛠️ Built With
+
+### Core Technologies
+- **Flutter** - UI framework
+- **Provider** - State management
+- **SQLite (sqflite)** - Local database storage
+- **Shared Preferences** - Settings persistence
+
+### Key Packages
+| Package | Purpose |
+|---------|---------|
+| `intl` | Internationalization (EN/BN) |
+| `fl_chart` | Beautiful charts and graphs |
+| `speech_to_text` | Voice recognition |
+| `permission_handler` | App permissions |
+| `flutter_local_notifications` | Local notifications |
+| `path_provider` | File system access |
+| `url_launcher` | External links |
+| `http` | API communication |
+| `flutter_launcher_icons` | App icon generation |
+
+---
+
+## 📂 Project Structure
+
+```
+lib/
+├── config/              # Configuration files
+│   └── banglalink_config.dart
+├── database/            # SQLite database layer
+│   └── database_helper.dart
+├── localization/        # i18n translations
+│   └── app_localizations.dart
+├── models/              # Data models
+│   ├── expense.dart
+│   ├── category.dart
+│   └── reward.dart
+├── providers/           # State management
+│   └── finance_provider.dart
+├── screens/             # UI screens
+│   ├── home/            # Dashboard
+│   ├── expense/         # Expense CRUD
+│   ├── voice/           # Voice input
+│   ├── chatbot/         # AI assistant
+│   ├── rewards/         # Gamification
+│   ├── budget/          # Budget management
+│   ├── categories/      # Category management
+│   ├── settings/        # App settings
+│   ├── premium/         # Subscription
+│   └── onboarding/      # First-time setup
+├── services/            # Business logic
+│   ├── voice_parser_service.dart
+│   ├── chatbot_service.dart
+│   ├── reward_system_service.dart
+│   ├── notification_service.dart
+│   ├── banglalink_integration_service.dart
+│   ├── pdf_export_service.dart
+│   └── update_checker_service.dart
+└── main.dart            # App entry point
+```
+
+---
+
+## 🎨 Design Philosophy
+
+### Color Palette
+- **Primary**: `#F16725` (Orange) - Energy and warmth
+- **Secondary**: `#0066CC` (Blue) - Trust and stability
+- **Accent**: `#4ECDC4` (Teal) - Freshness and clarity
+- **Purple**: `#9C27B0` - Premium features
+
+### UI/UX Principles
+- **Material Design 3**: Modern, consistent UI
+- **Responsive Layout**: Works on all screen sizes
+- **Accessibility**: High contrast, readable fonts
+- **Localization**: Native language support
+- **Smooth Animations**: Delightful micro-interactions
+
+---
+
+## 🔐 Permissions
+
+| Permission | Purpose |
+|------------|---------|
+| **Internet** | API calls, updates, premium features |
+| **Microphone** | Voice expense entry |
+| **Notifications** | Daily reminders, budget alerts |
+| **Storage** | PDF export, data backup |
+| **SMS** | Premium SMS integration (optional) |
+
+---
+
+## 🌍 Localization
+
+Hishab supports:
+- **English (EN)** - Default
+- **Bengali (বাংলা)** - Full translation
+
+To add a new language:
+1. Add translations to `lib/localization/app_localizations.dart`
+2. Update `supportedLocales` in `main.dart`
+3. Test with `flutter run --locale=<code>`
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Development Guidelines
+- Follow Flutter/Dart style guide
+- Write meaningful commit messages
+- Add comments for complex logic
+- Test on both Android and iOS
+- Update README for new features
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👥 Authors
+
+- **Nowshiningg** - *Initial work* - [GitHub](https://github.com/Nowshiningg)
+
+---
+
+## 🙏 Acknowledgments
+
+- Flutter team for the amazing framework
+- Material Design for design inspiration
+- Contributors and testers
+- Banglalink for premium integration support
+
+---
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/Nowshiningg/Hishab-AppLink/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Nowshiningg/Hishab-AppLink/discussions)
+
+---
+
+## 🗺️ Roadmap
+
+### Upcoming Features
+- [ ] Cloud sync and backup
+- [ ] Multi-currency support
+- [ ] Receipt scanning with OCR
+- [ ] Shared budgets (family/team)
+- [ ] Investment tracking
+- [ ] Bill reminders
+- [ ] Recurring expenses
+- [ ] Export to Excel/CSV
+- [ ] Widgets for home screen
+- [ ] Wear OS support
+
+---
+
+## 📊 Version History
+
+- **1.0.0** (Current)
+  - Initial release
+  - Core expense tracking
+  - Voice input & AI chatbot
+  - Category budgets & rewards
+  - Banglalink premium integration
+  - EN/BN localization
+
+---
+
+<div align="center">
+  
+  ### Made with ❤️ using Flutter
+  
+  **Star ⭐ this repo if you find it helpful!**
+  
+</div>
 
