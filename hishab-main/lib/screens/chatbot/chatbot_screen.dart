@@ -182,27 +182,29 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               child: const Icon(Icons.smart_toy, color: Color(0xFFF16725)),
             ),
             const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  loc.translate('chatbot'),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    loc.translate('chatbot'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                   ),
-                ),
-                Text(
-                  _isProcessing
-                      ? (loc.languageCode == 'bn' ? 'চিন্তা করছি...' : 'Thinking...')
-                      : (loc.languageCode == 'bn' ? 'অনলাইন' : 'Online'),
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 12,
+                  Text(
+                    _isProcessing
+                        ? (loc.languageCode == 'bn' ? 'চিন্তা করছি...' : 'Thinking...')
+                        : (loc.languageCode == 'bn' ? 'অনলাইন' : 'Online'),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

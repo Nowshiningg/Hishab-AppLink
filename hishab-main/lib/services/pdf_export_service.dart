@@ -84,11 +84,13 @@ class PdfExportService {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
+        title: Row(
+          children: const [
             Icon(Icons.picture_as_pdf, color: Color(0xFFF16725)),
             SizedBox(width: 12),
-            Text('Export PDF'),
+            Expanded(
+              child: Text('Export PDF'),
+            ),
           ],
         ),
         content: Column(

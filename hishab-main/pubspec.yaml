@@ -48,7 +48,7 @@ dependencies:
   
   # UI Components
   fl_chart: ^0.65.0
-  intl: ^0.20.2
+  intl: ^0.19.0
 
   # Shared Preferences for onboarding
   shared_preferences: ^2.2.2
@@ -90,9 +90,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/logo_hishab.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

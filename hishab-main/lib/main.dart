@@ -117,15 +117,21 @@ class _SplashScreenState extends State<SplashScreen> {
     // Wait for a moment to show splash
     await Future.delayed(const Duration(seconds: 1));
 
-    final prefs = await SharedPreferences.getInstance();
-    final hasSeenOnboarding = prefs.getBool('onboarding_complete') ?? false;
-    final isUserRegistered = prefs.getBool('user_registered') ?? false;
-    final hasSetIncome = prefs.getBool('income_set') ?? false;
-
     if (!mounted) return;
 
     // Check for app updates in background
     UpdateCheckerService.checkForUpdates(context, '1.0.0');
+
+    // SKIP ONBOARDING - Go directly to home screen
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
+    );
+    
+    /* ORIGINAL ONBOARDING FLOW - Commented out to skip
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenOnboarding = prefs.getBool('onboarding_complete') ?? false;
+    final isUserRegistered = prefs.getBool('user_registered') ?? false;
+    final hasSetIncome = prefs.getBool('income_set') ?? false;
 
     if (!hasSeenOnboarding) {
       // First time: show onboarding
@@ -152,6 +158,7 @@ class _SplashScreenState extends State<SplashScreen> {
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     }
+    */
   }
 
   @override
@@ -163,16 +170,30 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 120,
-              height: 120,
+              width: 140,
+              height: 140,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.12),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
-              child: const Icon(
-                Icons.account_balance_wallet,
-                size: 60,
-                color: Color(0xFF4ECDC4),
+              padding: const EdgeInsets.all(16),
+              child: Image.asset(
+                'assets/logo_hishab.png',
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.account_balance_wallet,
+                    size: 64,
+                    color: Color(0xFF4ECDC4),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 32),

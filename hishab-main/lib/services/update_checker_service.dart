@@ -31,11 +31,13 @@ class UpdateCheckerService {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
+        title: Row(
+          children: const [
             Icon(Icons.system_update, color: Color(0xFFF16725), size: 28),
             SizedBox(width: 12),
-            Text('Update Available'),
+            Expanded(
+              child: Text('Update Available'),
+            ),
           ],
         ),
         content: const Column(
@@ -149,11 +151,13 @@ class UpdateCheckerService {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
+        title: Row(
+          children: const [
             Icon(Icons.check_circle, color: Colors.green, size: 28),
             SizedBox(width: 12),
-            Text('Download Complete'),
+            Expanded(
+              child: Text('Download Complete'),
+            ),
           ],
         ),
         content: Column(
@@ -228,11 +232,13 @@ class UpdateCheckerService {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
+        title: Row(
+          children: const [
             Icon(Icons.error, color: Colors.red, size: 28),
             SizedBox(width: 12),
-            Text('Update Failed'),
+            Expanded(
+              child: Text('Update Failed'),
+            ),
           ],
         ),
         content: Text(message),

@@ -737,18 +737,35 @@ class SettingsScreen extends StatelessWidget {
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          enabled
-                              ? '${loc.translate('reminderTime')}: $time'
-                              : loc.translate('reminderDisabled'),
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.6),
-                          ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(
+                              enabled ? Icons.access_time : Icons.notifications_off,
+                              size: 16,
+                              color: enabled 
+                                  ? const Color(0xFF4ECDC4)
+                                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                enabled
+                                    ? '$time'
+                                    : loc.translate('reminderDisabled'),
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: enabled ? FontWeight.w600 : FontWeight.normal,
+                                  color: enabled
+                                      ? const Color(0xFF4ECDC4)
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withOpacity(0.5),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -773,13 +790,32 @@ class SettingsScreen extends StatelessWidget {
               if (enabled) ...[
                 const SizedBox(height: 16),
                 const Divider(),
-                const SizedBox(height: 16),
-                TextButton.icon(
-                  onPressed: () => _showTimePickerDialog(context, time),
-                  icon: const Icon(Icons.schedule, color: Color(0xFF4ECDC4)),
-                  label: Text(
-                    loc.translate('changeReminderTime'),
-                    style: const TextStyle(color: Color(0xFF4ECDC4)),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showTimePickerDialog(context, time),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4ECDC4).withOpacity(0.1),
+                      foregroundColor: const Color(0xFF4ECDC4),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(
+                          color: Color(0xFF4ECDC4),
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    icon: const Icon(Icons.schedule, size: 20),
+                    label: Text(
+                      loc.translate('changeReminderTime'),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -1557,11 +1593,16 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
+        title: Row(
+          children: const [
             Icon(Icons.sms, color: Color(0xFFF16725)),
             SizedBox(width: 12),
-            Text('Send Monthly Summary'),
+            Expanded(
+              child: Text(
+                'Send Monthly Summary',
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
           ],
         ),
         content: const Text(
@@ -1634,11 +1675,13 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
+        title: Row(
+          children: const [
             Icon(Icons.notifications_active, color: Color(0xFFF16725)),
             SizedBox(width: 12),
-            Text('Budget Alerts'),
+            Expanded(
+              child: Text('Budget Alerts'),
+            ),
           ],
         ),
         content: const Text(

@@ -66,37 +66,71 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       floatingActionButton: _selectedIndex == 0 || _selectedIndex == 1
-          ? Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFF16725).withOpacity(0.4),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // Voice Assistant FAB
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF4ECDC4).withOpacity(0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: FloatingActionButton.extended(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AddExpenseScreen(),
-                    ),
-                  );
-                },
-                backgroundColor: const Color(0xFFF16725),
-                elevation: 0,
-                icon: const Icon(Icons.add, color: Colors.white, size: 24),
-                label: Text(
-                  loc.translate('addExpense'),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                  child: FloatingActionButton(
+                    heroTag: 'voice',
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const VoiceExpenseScreen(),
+                        ),
+                      );
+                    },
+                    backgroundColor: const Color(0xFF4ECDC4),
+                    elevation: 0,
+                    child: const Icon(Icons.mic, color: Colors.white, size: 28),
                   ),
                 ),
-              ),
+                const SizedBox(width: 16),
+                // Add Expense FAB
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFF16725).withOpacity(0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: FloatingActionButton.extended(
+                    heroTag: 'add',
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const AddExpenseScreen(),
+                        ),
+                      );
+                    },
+                    backgroundColor: const Color(0xFFF16725),
+                    elevation: 0,
+                    icon: const Icon(Icons.add, color: Colors.white, size: 24),
+                    label: Text(
+                      loc.translate('addExpense'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             )
           : null,
     );
@@ -145,21 +179,49 @@ class DashboardTab extends StatelessWidget {
                     child: SafeArea(
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              provider.userName.isNotEmpty
-                                ? '${loc.translate('hello')}, ${provider.firstName}!'
-                                : '${loc.translate('hello')}!',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        child: SingleChildScrollView(
+                          physics: const ClampingScrollPhysics(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Image.asset(
+                                    'assets/logo_hishab.png',
+                                    width: 32,
+                                    height: 32,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(
+                                        Icons.account_balance_wallet,
+                                        color: Colors.white,
+                                        size: 32,
+                                      );
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    provider.userName.isNotEmpty
+                                      ? '${loc.translate('hello')}, ${provider.firstName}!'
+                                      : '${loc.translate('hello')}!',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 12),
                             Text(
                               loc.translate('todaySpending'),
                               style: const TextStyle(
@@ -180,72 +242,65 @@ class DashboardTab extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Flexible(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.25),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.4),
+                                  width: 1.5,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.25),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.4),
-                                    width: 1.5,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 6),
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 15,
-                                      offset: const Offset(0, 6),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    loc.translate('dailyAllowance'),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
                                     ),
-                                  ],
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      loc.translate('dailyAllowance'),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      '৳${NumberFormat('#,##0.00').format(dailyAllowance)}',
                                       style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 12,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
-                                    FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Text(
-                                        '৳${NumberFormat('#,##0.00').format(dailyAllowance)}',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  LinearProgressIndicator(
+                                    value: dailyAllowance > 0
+                                        ? (todayTotal / dailyAllowance).clamp(0.0, 1.0)
+                                        : 0,
+                                    backgroundColor: Colors.white.withOpacity(0.3),
+                                    valueColor: const AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
                                     ),
-                                    const SizedBox(height: 6),
-                                    LinearProgressIndicator(
-                                      value: dailyAllowance > 0
-                                          ? (todayTotal / dailyAllowance).clamp(
-                                              0.0,
-                                              1.0,
-                                            )
-                                          : 0,
-                                      backgroundColor: Colors.white.withOpacity(
-                                        0.3,
-                                      ),
-                                      valueColor:
-                                          const AlwaysStoppedAnimation<Color>(
-                                            Colors.white,
-                                          ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
+                        ),
                         ),
                       ),
                     ),
@@ -262,24 +317,8 @@ class DashboardTab extends StatelessWidget {
                         Expanded(
                           child: _buildQuickActionButton(
                             context,
-                            loc.translate('voiceExpense'),
-                            Icons.mic,
-                            const Color(0xFF4ECDC4),
-                            () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const VoiceExpenseScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildQuickActionButton(
-                            context,
                             loc.translate('chatbot'),
-                            Icons.chat_bubble,
+                            Icons.smart_toy,
                             const Color(0xFFF16725),
                             () {
                               Navigator.of(context).push(
@@ -290,15 +329,41 @@ class DashboardTab extends StatelessWidget {
                             },
                           ),
                         ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildQuickActionButton(
+                            context,
+                            loc.translate('rewards'),
+                            Icons.emoji_events,
+                            const Color(0xFF9C27B0),
+                            () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => const RewardsScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildQuickActionButton(
+                            context,
+                            loc.translate('categoryBudgets'),
+                            Icons.account_balance_wallet,
+                            const Color(0xFF0066CC),
+                            () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => const CategoryBudgetsScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    // Rewards Button
-                    _buildRewardsCard(context, loc, provider),
-                    const SizedBox(height: 12),
-                    // Category Budgets Button
-                    _buildCategoryBudgetsCard(context, loc),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     _buildSummaryCard(
                       loc.translate('thisWeek'),
                       weekTotal,
@@ -323,7 +388,7 @@ class DashboardTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     _buildQuickStats(provider, context),
-                    const SizedBox(height: 100), // Space for FAB
+                    const SizedBox(height: 140), // Extra space to avoid overflow under FAB
                   ]),
                 ),
               ),
@@ -480,7 +545,7 @@ class DashboardTab extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -500,16 +565,20 @@ class DashboardTab extends StatelessWidget {
           ],
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: Colors.white, size: 32),
             const SizedBox(height: 8),
             Text(
               title,
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                height: 1.2,
               ),
             ),
           ],
