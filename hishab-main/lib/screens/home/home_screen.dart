@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const DashboardTab(),
     const ExpenseListScreen(),
     const CategoryBreakdownScreen(),
+    const PremiumSubscriptionScreen(),
     const SettingsScreen(),
   ];
 
@@ -53,6 +54,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.pie_chart),
             label: loc.translate('categories'),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.workspace_premium),
+            label: 'Premium',
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings),
@@ -251,9 +256,6 @@ class DashboardTab extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    // Premium Subscription Banner
-                    _PremiumBanner(),
-                    const SizedBox(height: 12),
                     // Quick Actions
                     Row(
                       children: [
