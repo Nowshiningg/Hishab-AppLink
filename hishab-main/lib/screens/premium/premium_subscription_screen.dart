@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../services/banglalink_integration_service.dart';
+import 'package:provider/provider.dart';
+import '../../providers/finance_provider.dart';
+import 'premium_thank_you_screen.dart';
+import 'premium_features_screen.dart';
 
 class PremiumSubscriptionScreen extends StatefulWidget {
   const PremiumSubscriptionScreen({super.key});
@@ -9,114 +12,32 @@ class PremiumSubscriptionScreen extends StatefulWidget {
 }
 
 class _PremiumSubscriptionScreenState extends State<PremiumSubscriptionScreen> {
-  final _blService = BanglalinkIntegrationService();
-  bool _isLoading = true;
-  bool _isSubscribed = false;
   bool _isProcessing = false;
-  dynamic _subscription;
 
   @override
   void initState() {
     super.initState();
-    _checkSubscriptionStatus();
-  }
-
-  Future<void> _checkSubscriptionStatus() async {
-    setState(() => _isLoading = true);
-    
-    try {
-      final isSubscribed = await _blService.isPremiumSubscriber();
-      
-      if (isSubscribed) {
-        final status = await _blService.getSubscriptionStatus();
-        setState(() {
-          _isSubscribed = isSubscribed;
-          _subscription = status;
-        });
-      } else {
-        setState(() => _isSubscribed = false);
-      }
-    } catch (e) {
-      debugPrint('Error checking subscription: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
   }
 
   Future<void> _subscribe() async {
     setState(() => _isProcessing = true);
     
     try {
-      final subscription = await _blService.subscribeToPremium();
+      // Subscribe using provider (demo mode)
+      await context.read<FinanceProvider>().subscribeToPremium();
       
-      if (subscription != null && subscription.isActive) {
-        setState(() {
-          _isSubscribed = true;
-          _subscription = subscription;
-        });
-        _showMessage('Successfully subscribed to Premium!', isError: false);
-      } else {
-        _showMessage('Subscription failed. Please try again.');
+      // Navigate to thank you screen
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const PremiumThankYouScreen(),
+          ),
+        );
       }
     } catch (e) {
       _showMessage('Error: ${e.toString()}');
-    } finally {
       setState(() => _isProcessing = false);
     }
-  }
-
-  Future<void> _unsubscribe() async {
-    final confirmed = await _showConfirmDialog(
-      'Cancel Subscription?',
-      'Are you sure you want to cancel your premium subscription? You will lose access to all premium features.',
-    );
-    
-    if (!confirmed) return;
-    
-    setState(() => _isProcessing = true);
-    
-    try {
-      final success = await _blService.unsubscribeFromPremium();
-      
-      if (success == true) {
-        setState(() {
-          _isSubscribed = false;
-          _subscription = null;
-        });
-        _showMessage('Subscription cancelled successfully', isError: false);
-      } else {
-        _showMessage('Failed to cancel subscription');
-      }
-    } catch (e) {
-      _showMessage('Error: ${e.toString()}');
-    } finally {
-      setState(() => _isProcessing = false);
-    }
-  }
-
-  Future<bool> _showConfirmDialog(String title, String message) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
-    );
-    return result ?? false;
   }
 
   void _showMessage(String message, {bool isError = true}) {
@@ -132,21 +53,32 @@ class _PremiumSubscriptionScreenState extends State<PremiumSubscriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-        title: const Text(
-          'Premium Subscription',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _isSubscribed
-              ? _buildSubscribedView()
-              : _buildUnsubscribedView(),
+    return Consumer<FinanceProvider>(
+      builder: (context, provider, child) {
+        // Check if we should show thank you screen
+        if (provider.isPremiumSubscribed && provider.showPremiumThankYou) {
+          return const PremiumThankYouScreen();
+        }
+        
+        // Show features screen if already subscribed
+        if (provider.isPremiumSubscribed) {
+          return const PremiumFeaturesScreen();
+        }
+        
+        // Otherwise show subscription offer
+        return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            elevation: 0,
+            title: const Text(
+              'Premium Subscription',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          body: _buildUnsubscribedView(),
+        );
+      },
     );
   }
 
@@ -365,143 +297,13 @@ class _PremiumSubscriptionScreenState extends State<PremiumSubscriptionScreen> {
     );
   }
 
-  Widget _buildSubscribedView() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Success badge
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(30),
-              decoration: BoxDecoration(
-                color: Colors.green,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.withOpacity(0.3),
-                    blurRadius: 20,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.check_circle,
-                size: 80,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          const SizedBox(height: 30),
-
-          // Title
-          const Text(
-            'You\'re Premium!',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          // Status
-          Text(
-            'Enjoying all premium features',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 40),
-
-          // Subscription info card
-          if (_subscription != null)
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow('Status', (_subscription.status as String).toUpperCase()),
-                  const Divider(height: 24),
-                  _buildInfoRow('Subscribed On', _formatDate(_subscription.subscribedAt as DateTime)),
-                  if ((_subscription.nextBillingDate as DateTime?) != null) ...[
-                    const Divider(height: 24),
-                    _buildInfoRow('Next Billing', _formatDate(_subscription.nextBillingDate as DateTime)),
-                  ],
-                  const Divider(height: 24),
-                  _buildInfoRow('Price', '৳2/day'),
-                ],
-              ),
-            ),
-          const SizedBox(height: 40),
-
-          // Active features
-          const Text(
-            'Active Premium Features',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          _buildActiveFeature(Icons.cloud_done, 'Cloud Sync'),
-          _buildActiveFeature(Icons.analytics, 'Advanced Analytics'),
-          _buildActiveFeature(Icons.card_giftcard, 'Rewards Redemption'),
-          _buildActiveFeature(Icons.smart_toy, 'Smart Assistant'),
-          _buildActiveFeature(Icons.picture_as_pdf, 'PDF Reports'),
-          _buildActiveFeature(Icons.notifications_active, 'SMS Alerts'),
-          
-          const SizedBox(height: 40),
-
-          // Cancel button
-          OutlinedButton(
-            onPressed: _isProcessing ? null : _unsubscribe,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.red,
-              side: const BorderSide(color: Colors.red),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: _isProcessing
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
-                    ),
-                  )
-                : const Text(
-                    'Cancel Subscription',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFeatureCard(IconData icon, String title, String description) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
       ),
       child: Row(
         children: [
@@ -543,50 +345,5 @@ class _PremiumSubscriptionScreenState extends State<PremiumSubscriptionScreen> {
         ],
       ),
     );
-  }
-
-  Widget _buildActiveFeature(IconData icon, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.green, size: 24),
-          const SizedBox(width: 12),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
-        ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
   }
 }

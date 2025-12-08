@@ -18,6 +18,8 @@ class FinanceProvider extends ChangeNotifier {
   int _totalPoints = 0;
   List<Map<String, dynamic>> _rewards = [];
   int _consecutiveDays = 0;
+  bool _isPremiumSubscribed = false;
+  bool _showPremiumThankYou = false;
 
   List<Expense> get expenses => _expenses;
   List<CategoryModel> get categories => _categories;
@@ -31,6 +33,8 @@ class FinanceProvider extends ChangeNotifier {
   int get totalPoints => _totalPoints;
   List<Map<String, dynamic>> get rewards => _rewards;
   int get consecutiveDays => _consecutiveDays;
+  bool get isPremiumSubscribed => _isPremiumSubscribed;
+  bool get showPremiumThankYou => _showPremiumThankYou;
 
   // Initialize data
   Future<void> initialize() async {
@@ -46,6 +50,7 @@ class FinanceProvider extends ChangeNotifier {
       await loadIncome();
       await loadRewards();
       await calculateDailyStreak();
+      await loadPremiumStatus();
     } catch (e) {
       debugPrint('Error initializing: $e');
     } finally {
@@ -521,7 +526,7 @@ class FinanceProvider extends ChangeNotifier {
         'budget': budget,
         'spent': spent,
         'remaining': remaining,
-        'percentage': percentage as double,
+        'percentage': percentage,
       };
     }
 
@@ -531,6 +536,33 @@ class FinanceProvider extends ChangeNotifier {
   Future<void> deleteCategoryBudget(String categoryName) async {
     final now = DateTime.now();
     await _dbHelper.deleteCategoryBudget(categoryName, now.month, now.year);
+    notifyListeners();
+  }
+
+  // Premium subscription management
+  Future<void> loadPremiumStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    _isPremiumSubscribed = prefs.getBool('is_premium_subscribed') ?? false;
+    notifyListeners();
+  }
+
+  Future<void> subscribeToPremium() async {
+    final prefs = await SharedPreferences.getInstance();
+    _isPremiumSubscribed = true;
+    _showPremiumThankYou = true;
+    await prefs.setBool('is_premium_subscribed', true);
+    notifyListeners();
+  }
+
+  Future<void> unsubscribeFromPremium() async {
+    final prefs = await SharedPreferences.getInstance();
+    _isPremiumSubscribed = false;
+    await prefs.setBool('is_premium_subscribed', false);
+    notifyListeners();
+  }
+
+  void dismissPremiumThankYou() {
+    _showPremiumThankYou = false;
     notifyListeners();
   }
 }

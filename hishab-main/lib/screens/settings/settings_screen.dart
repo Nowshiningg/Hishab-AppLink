@@ -1341,10 +1341,9 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildPremiumCard(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: BanglalinkIntegrationService().isPremiumSubscriber(),
-      builder: (context, snapshot) {
-        final isPremium = snapshot.data ?? false;
+    return Consumer<FinanceProvider>(
+      builder: (context, provider, child) {
+        final isPremium = provider.isPremiumSubscribed;
         
         return Container(
           padding: const EdgeInsets.all(20),
