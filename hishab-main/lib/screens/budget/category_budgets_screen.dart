@@ -28,7 +28,7 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          loc.translate('categoryBudgets'),
+          loc.translate('Category Budgets'),
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -76,7 +76,7 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      loc.translate('manageCategoryBudgets'),
+                      loc.translate('Manage Category Budgets'),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Colors.white,
@@ -86,7 +86,7 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      loc.translate('setBudgetsForCategories'),
+                      loc.translate('Set Budgets For Categories'),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
@@ -409,7 +409,7 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(loc.translate('setCategoryBudget')),
+        title: Text(loc.translate('Set Category Budget')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

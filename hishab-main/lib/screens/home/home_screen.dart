@@ -349,7 +349,7 @@ class DashboardTab extends StatelessWidget {
                         Expanded(
                           child: _buildQuickActionButton(
                             context,
-                            loc.translate('categoryBudgets'),
+                            loc.translate('Category Budgets'),
                             Icons.account_balance_wallet,
                             const Color(0xFF0066CC),
                             () {
