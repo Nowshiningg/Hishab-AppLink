@@ -122,12 +122,6 @@ class _SplashScreenState extends State<SplashScreen> {
     // Check for app updates in background
     UpdateCheckerService.checkForUpdates(context, '1.0.0');
 
-    // SKIP ONBOARDING - Go directly to home screen
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
-    
-    /* ORIGINAL ONBOARDING FLOW - Commented out to skip
     final prefs = await SharedPreferences.getInstance();
     final hasSeenOnboarding = prefs.getBool('onboarding_complete') ?? false;
     final isUserRegistered = prefs.getBool('user_registered') ?? false;
@@ -158,7 +152,6 @@ class _SplashScreenState extends State<SplashScreen> {
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     }
-    */
   }
 
   @override
