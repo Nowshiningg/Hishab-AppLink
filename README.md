@@ -1,8 +1,7 @@
 # Hishab - Personal Finance Tracker
 
 <div align="center">
-  <img src="hishab-main\logo_hishab.png" alt="Hishab Logo" width="120"/>
-  
+  <img src="hishab-main/assets/logo_hishab.png" alt="Hishab Logo" width="120"/>
   ### আপনার খরচ ট্র্যাক করুন
   
   A beautiful, feature-rich expense tracking app built with Flutter that helps you manage your daily finances with ease.
