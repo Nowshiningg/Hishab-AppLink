@@ -1,7 +1,7 @@
 # Hishab - Personal Finance Tracker
 
 <div align="center">
-  <img src="assets/logo_hishab.png" alt="Hishab Logo" width="120"/>
+  <img src="hishab-main\logo_hishab.png" alt="Hishab Logo" width="120"/>
   
   ### আপনার খরচ ট্র্যাক করুন
   
@@ -51,7 +51,7 @@
 
 ---
 
-## 📱 Screenshots
+## 📱 Screenshots(Check the screeenshots folder inside main branch)
 
 | Home Screen | Voice Entry | Analytics | Chatbot |
 |------------|-------------|-----------|---------|
