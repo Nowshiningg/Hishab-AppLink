@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crypto/crypto.dart';
 import '../config/api_config.dart';
 
 /// Service to handle user registration and data persistence
@@ -13,11 +14,12 @@ class UserRegistrationService {
 
   UserRegistrationService._internal();
 
-  /// Register a new user with name and phone number
+  /// Register a new user with name, phone number and password
   /// Saves locally and sends to backend
   Future<Map<String, dynamic>> registerUser({
     required String name,
     required String phoneNumber,
+    required String password,
   }) async {
     try {
       // Save locally first
@@ -25,13 +27,22 @@ class UserRegistrationService {
       await prefs.setString('user_name', name);
       await prefs.setString('user_phone', phoneNumber);
       
+      // Hash password using SHA256
+      final hashedPassword = sha256.convert(utf8.encode(password)).toString();
+      await prefs.setString('user_password_hash', hashedPassword);
+      
       // Generate or use phone number as user ID
       final userId = 'user_${phoneNumber.replaceAll('+', '').replaceAll(' ', '')}';
       await prefs.setString('user_id', userId);
       await prefs.setBool('user_registered', true);
 
       // Send to backend asynchronously (don't wait for response)
-      _sendUserDataToBackend(name: name, phoneNumber: phoneNumber, userId: userId);
+      _sendUserDataToBackend(
+        name: name,
+        phoneNumber: phoneNumber,
+        userId: userId,
+        passwordHash: hashedPassword,
+      );
 
       return {
         'success': true,
@@ -53,30 +64,30 @@ class UserRegistrationService {
     required String name,
     required String phoneNumber,
     required String userId,
+    required String passwordHash,
   }) async {
     try {
       final response = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/api/users/register'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: ApiConfig.getAuthHeaders(),
         body: jsonEncode({
           'userId': userId,
           'name': name,
           'phoneNumber': phoneNumber,
+          'passwordHash': passwordHash,
           'registeredAt': DateTime.now().toIso8601String(),
           'appVersion': '1.0.0',
         }),
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('User data sent to backend successfully');
+        print('✅ User registered successfully on backend');
       } else {
         print('Backend responded with status code: ${response.statusCode}');
       }
     } catch (e) {
       // Silently fail - user data is already saved locally
-      print('Error sending user data to backend: $e');
+      print('⚠️ Error sending user data to backend: $e');
     }
   }
 
@@ -107,6 +118,24 @@ class UserRegistrationService {
   Future<bool> isUserRegistered() async {
     final user = await getCurrentUser();
     return user != null;
+  }
+
+  /// Verify password against stored hash
+  Future<bool> verifyPassword(String password) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final storedHash = prefs.getString('user_password_hash');
+
+      if (storedHash == null) {
+        return false;
+      }
+
+      final hashedInput = sha256.convert(utf8.encode(password)).toString();
+      return hashedInput == storedHash;
+    } catch (e) {
+      print('Error verifying password: $e');
+      return false;
+    }
   }
 
   /// Update user profile (optional - for future use)
