@@ -176,7 +176,7 @@ class SettingsScreen extends StatelessWidget {
           Switch(
             value: provider.isDarkMode,
             onChanged: (value) => provider.toggleThemeMode(),
-            activeColor: const Color(0xFFF16725),
+            activeThumbColor: const Color(0xFFF16725),
           ),
         ],
       ),
@@ -772,7 +772,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   Switch(
                     value: enabled,
-                    activeColor: const Color(0xFF4ECDC4),
+                    activeThumbColor: const Color(0xFF4ECDC4),
                     onChanged: (value) async {
                       if (value) {
                         await _showTimePickerDialog(context, time);

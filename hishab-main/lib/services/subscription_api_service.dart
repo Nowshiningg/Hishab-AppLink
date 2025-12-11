@@ -5,14 +5,15 @@ import '../models/subscription.dart';
 
 /// Subscription API Service
 /// Handles all subscription-related API calls to Banglalink AppLink
+/// Matches backend expected data structure from /api/banglalink/subscription/subscribe-proxy and unsubscribe-proxy
 
 class SubscriptionApiService {
   /// Subscribe user to premium plan
   /// 
-  /// [phoneNumber]: User's Banglalink phone number
+  /// [phoneNumber]: User's Banglalink phone number (e.g., '01711234567')
   /// [userId]: Unique user identifier
   /// 
-  /// Returns: Subscription object if successful
+  /// Returns: Subscription object if successful, null otherwise
   static Future<Subscription?> subscribe({
     required String phoneNumber,
     required String userId,
@@ -26,18 +27,30 @@ class SubscriptionApiService {
         body: jsonEncode({
           'phoneNumber': phoneNumber,
           'userId': userId,
-          'plan': 'premium_daily',
         }),
       ).timeout(ApiConfig.connectionTimeout);
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        if (jsonResponse['success'] == true) {
-          return Subscription.fromJson(jsonResponse['data']);
-        }
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      
+      if (jsonResponse['success'] == true && response.statusCode == 200) {
+        final subscriptionData = jsonResponse['data'];
+        return Subscription(
+          subscriptionId: subscriptionData['subscriptionId'] ?? '',
+          userId: userId,
+          phoneNumber: phoneNumber,
+          status: subscriptionData['status'] ?? 'active',
+          features: List<String>.from(subscriptionData['features'] ?? []),
+          amount: (subscriptionData['amount'] as num?)?.toDouble() ?? 2.0,
+          nextBillingDate: subscriptionData['nextBillingDate'] != null 
+              ? DateTime.parse(subscriptionData['nextBillingDate'] as String)
+              : null,
+          startDate: subscriptionData['startDate'] != null
+              ? DateTime.parse(subscriptionData['startDate'] as String)
+              : null,
+        );
       }
       
-      throw Exception('Failed to subscribe: ${response.body}');
+      throw Exception('Subscription failed: ${jsonResponse['message'] ?? 'Unknown error'}');
     } catch (e) {
       throw Exception('Subscription error: $e');
     }
@@ -47,8 +60,8 @@ class SubscriptionApiService {
   /// 
   /// [userId]: Unique user identifier
   /// 
-  /// Returns: Updated Subscription object if successful
-  static Future<Subscription?> unsubscribe({
+  /// Returns: true if unsubscription was successful
+  static Future<bool> unsubscribe({
     required String userId,
   }) async {
     try {
@@ -62,14 +75,13 @@ class SubscriptionApiService {
         }),
       ).timeout(ApiConfig.connectionTimeout);
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        if (jsonResponse['success'] == true) {
-          return Subscription.fromJson(jsonResponse['data']);
-        }
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      
+      if (jsonResponse['success'] == true && response.statusCode == 200) {
+        return true;
       }
       
-      throw Exception('Failed to unsubscribe: ${response.body}');
+      throw Exception('Unsubscription failed: ${jsonResponse['message'] ?? 'Unknown error'}');
     } catch (e) {
       throw Exception('Unsubscribe error: $e');
     }

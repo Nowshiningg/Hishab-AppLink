@@ -61,7 +61,7 @@ class BanglalinkIntegrationService {
   }
 
   /// Unsubscribe from premium plan
-  Future<Subscription?> unsubscribeFromPremium() async {
+  Future<bool> unsubscribeFromPremium() async {
     if (!isInitialized) throw Exception('Service not initialized');
     
     return await SubscriptionApiService.unsubscribe(

@@ -3,15 +3,11 @@
 library;
 
 class ApiConfig {
-  // Base URL - Update this with your deployed backend URL
+  // Base URL for backend
   static const String baseUrl = 'https://hishab-backend.onrender.com';
   
   // For local development, use:
   // static const String baseUrl = 'http://localhost:3001';
-  
-  // API Key - Stored as environment variable on Render
-  // This key is used for authentication with backend
-  static const String apiKey = 'YOUR_API_KEY_HERE';
   
   // API Endpoints
   static const String subscriptionBase = '/api/banglalink/subscription';
@@ -21,8 +17,8 @@ class ApiConfig {
   static const String downloadBase = '/api/banglalink/download';
   
   // Subscription API Endpoints
-  static const String subscribeEndpoint = '$subscriptionBase/subscribe';
-  static const String unsubscribeEndpoint = '$subscriptionBase/unsubscribe';
+  static const String subscribeEndpoint = '$subscriptionBase/subscribe-proxy';
+  static const String unsubscribeEndpoint = '$subscriptionBase/unsubscribe-proxy';
   static const String subscriptionStatusEndpoint = '$subscriptionBase/status';
   
   // CaaS (Charging-as-a-Service) API Endpoints
@@ -33,7 +29,11 @@ class ApiConfig {
   // SMS API Endpoints
   static const String sendSmsEndpoint = '$smsBase/send';
   static const String sendOtpEndpoint = '$smsBase/send-otp';
-  static const String verifyOtpEndpoint = '$smsBase/verify-otp';
+  static const String verifyOtpEndpoint = '$smsBase/verify';
+  // OTP request endpoint for Banglalink AppLink
+  static const String otpRequestEndpoint = '/api/banglalink/otp/request';
+  // OTP verify endpoint for Banglalink AppLink
+  static const String otpVerifyEndpoint = '/api/banglalink/otp/verify';
   static const String sendSummaryEndpoint = '$smsBase/send-summary';
   
   // USSD API Endpoints
@@ -69,12 +69,13 @@ class ApiConfig {
     return '$baseUrl$endpoint';
   }
   
-  /// Get common headers for all API requests with authentication
+  /// Get common headers for all API requests
+  /// Backend only requires Content-Type and Accept headers
+  /// API authentication is handled server-side
   static Map<String, String> getAuthHeaders() {
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'X-API-Key': apiKey,
     };
   }
 }

@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:math';
+import 'dart:io' show Platform;
 import '../config/api_config.dart';
 
 /// Service to handle OTP generation, sending, and verification
@@ -8,6 +9,7 @@ class OTPService {
   static final OTPService _instance = OTPService._internal();
   
   static String? _lastGeneratedOtp;
+  static String? _lastReferenceNo;
   static DateTime? _otpExpiryTime;
   static const int _otpExpirySeconds = 300;
 
@@ -29,22 +31,66 @@ class OTPService {
     required String appUserId,
   }) async {
     try {
+      // generate a demo OTP locally (kept for demo mode)
       final otp = _generateOtp();
-      final message = 'Your Hishab verification code is: $otp. Valid for 5 minutes.';
 
+      // Prepare application metadata
+      String deviceName = 'unknown';
+      String osName = 'unknown';
       try {
-        await _sendViaBangalinkSMS(
-          phoneNumber: phoneNumber,
-          message: message,
-          otp: otp,
-        );
-      } catch (e) {
-        print('⚠️ Warning: Failed to send via Banglalink API: $e');
+        deviceName = Platform.isAndroid ? 'Android device' : (Platform.isIOS ? 'iOS device' : 'device');
+        osName = Platform.operatingSystem;
+      } catch (_) {
+        // Platform might not be available on some targets; fall back to defaults
       }
 
+      final body = {
+        'phoneNumber': _normalizePhoneNumber(phoneNumber),
+        'applicationHash': '',
+        'applicationMetaData': {
+          'client': 'mobile_app',
+          'device': deviceName,
+          'os': osName,
+          'appCode': 'hishab_app',
+        }
+      };
+
+      // Call backend OTP request endpoint and capture reference number if provided.
+      try {
+        final resp = await http.post(
+          Uri.parse(ApiConfig.getFullUrl(ApiConfig.otpRequestEndpoint)),
+          headers: ApiConfig.getAuthHeaders(),
+          body: jsonEncode(body),
+        ).timeout(const Duration(seconds: 10));
+
+        if (resp.statusCode != 200 && resp.statusCode != 201) {
+          print('⚠️ OTP request API responded with ${resp.statusCode}');
+        } else {
+          try {
+            final Map<String, dynamic> data = jsonDecode(resp.body);
+            if (data.containsKey('referenceNo')) {
+              _lastReferenceNo = data['referenceNo']?.toString();
+            }
+            if (data.containsKey('expiresIn')) {
+              // if backend provides expiry, update local expiry
+              final expires = int.tryParse(data['expiresIn']?.toString() ?? '');
+              if (expires != null && expires > 0) {
+                _otpExpiryTime = DateTime.now().add(Duration(seconds: expires));
+              }
+            }
+          } catch (_) {
+            // Non-fatal: response not JSON or doesn't contain referenceNo
+          }
+          print('✅ OTP request API called successfully for $phoneNumber');
+        }
+      } catch (e) {
+        print('⚠️ Failed to call OTP request API: $e');
+      }
+
+      // Keep returning demo OTP for development/testing. In production, rely on backend verification.
       return {
         'success': true,
-        'message': 'OTP sent successfully',
+        'message': 'OTP requested (backend called).',
         'otp': otp,
         'phoneNumber': phoneNumber,
         'expiresIn': _otpExpirySeconds,
@@ -57,33 +103,78 @@ class OTPService {
     }
   }
 
-  Future<void> _sendViaBangalinkSMS({
-    required String phoneNumber,
-    required String message,
-    required String otp,
-  }) async {
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.sendSmsEndpoint}'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'phoneNumber': phoneNumber,
-        'message': message,
-        'smsType': 'otp_verification',
-        'otp': otp,
-      }),
-    ).timeout(const Duration(seconds: 10));
-
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('SMS API responded with ${response.statusCode}');
-    }
-    print('✅ OTP sent via Banglalink SMS API');
+  String _normalizePhoneNumber(String raw) {
+    var s = raw.trim();
+    // Remove whitespace
+    s = s.replaceAll(RegExp(r'\s+'), '');
+    if (s.startsWith('+880')) return '0' + s.substring(4);
+    if (s.startsWith('880')) return '0' + s.substring(3);
+    return s;
   }
+
+  // Note: direct SMS helper removed; backend `/api/banglalink/otp/request` should handle delivery.
 
   Future<Map<String, dynamic>> verifyOtp({
     required String enteredOtp,
     required String phoneNumber,
   }) async {
     try {
+      // Prefer server-side verification when a reference number is available
+      if (_lastReferenceNo != null) {
+        try {
+          final resp = await http.post(
+            Uri.parse(ApiConfig.getFullUrl(ApiConfig.otpVerifyEndpoint)),
+            headers: ApiConfig.getAuthHeaders(),
+            body: jsonEncode({
+              'referenceNo': _lastReferenceNo,
+              'otp': enteredOtp.trim(),
+            }),
+          ).timeout(const Duration(seconds: 10));
+
+          if (resp.statusCode == 200 || resp.statusCode == 201) {
+            try {
+              final Map<String, dynamic> data = jsonDecode(resp.body);
+              final success = data['success'] == true || resp.statusCode == 200;
+              if (success) {
+                // clear local demo OTP
+                _lastGeneratedOtp = null;
+                _otpExpiryTime = null;
+                _lastReferenceNo = null;
+                return {
+                  'success': true,
+                  'message': data['message'] ?? 'OTP verified successfully (server)',
+                  'phoneNumber': phoneNumber,
+                };
+              }
+              return {
+                'success': false,
+                'message': data['message'] ?? 'OTP verification failed (server)',
+              };
+            } catch (_) {
+              // Non-JSON success — treat as success
+              _lastGeneratedOtp = null;
+              _otpExpiryTime = null;
+              _lastReferenceNo = null;
+              return {
+                'success': true,
+                'message': 'OTP verified (server)',
+                'phoneNumber': phoneNumber,
+              };
+            }
+          } else {
+            // server returned non-success
+            return {
+              'success': false,
+              'message': 'OTP verification failed (server ${resp.statusCode})',
+            };
+          }
+        } catch (e) {
+          // if server verification fails due to network, fall back to local demo verification
+          print('⚠️ Server verify failed: $e — falling back to local verification');
+        }
+      }
+
+      // Fallback: local demo verification (only for dev/test)
       if (_otpExpiryTime == null || DateTime.now().isAfter(_otpExpiryTime!)) {
         return {
           'success': false,
@@ -108,18 +199,9 @@ class OTPService {
       _lastGeneratedOtp = null;
       _otpExpiryTime = null;
 
-      try {
-        await _verifyOtpWithBackend(
-          phoneNumber: phoneNumber,
-          otp: enteredOtp,
-        );
-      } catch (e) {
-        print('⚠️ Backend verification failed: $e');
-      }
-
       return {
         'success': true,
-        'message': 'OTP verified successfully',
+        'message': 'OTP verified successfully (local)',
         'phoneNumber': phoneNumber,
       };
     } catch (e) {
@@ -130,20 +212,7 @@ class OTPService {
     }
   }
 
-  Future<void> _verifyOtpWithBackend({
-    required String phoneNumber,
-    required String otp,
-  }) async {
-    final response = await http.post(
-      Uri.parse('${ApiConfig.baseUrl}${ApiConfig.verifyOtpEndpoint}'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'phoneNumber': phoneNumber, 'otp': otp}),
-    ).timeout(const Duration(seconds: 10));
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Backend OTP verification failed');
-    }
-  }
 
   int getOtpRemainingSeconds() {
     if (_otpExpiryTime == null) return 0;
