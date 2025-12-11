@@ -378,101 +378,222 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final modeColor = _isAddMode ? Colors.green : Colors.blue;
+    final modeIcon = _isAddMode ? Icons.add_circle_outline : Icons.edit_outlined;
+    
     return AlertDialog(
-      title: const Text('Update Progress'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      title: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(8),
+          Icon(modeIcon, color: modeColor),
+          const SizedBox(width: 12),
+          const Text('Update Progress'),
+        ],
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Mode selector chips - moved to top
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildModeChip(
+                      label: 'Add Amount',
+                      icon: Icons.add,
+                      isSelected: _isAddMode,
+                      color: Colors.green,
+                      onTap: () {
+                        setState(() {
+                          _isAddMode = true;
+                          _controller.text = '';
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildModeChip(
+                      label: 'Set Total',
+                      icon: Icons.edit,
+                      isSelected: !_isAddMode,
+                      color: Colors.blue,
+                      onTap: () {
+                        setState(() {
+                          _isAddMode = false;
+                          _controller.text = widget.currentAmount.toStringAsFixed(0);
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Current: ৳${NumberFormat('#,##0').format(widget.currentAmount)}',
+            const SizedBox(height: 20),
+            
+            // Current amount display
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [modeColor.withOpacity(0.1), modeColor.withOpacity(0.05)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: modeColor.withOpacity(0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.account_balance_wallet, color: modeColor, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Current Amount',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '৳${NumberFormat('#,##0').format(widget.currentAmount)}',
                     style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.blue[900],
+                      fontSize: 24,
+                      color: modeColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _isAddMode 
-                ? 'Enter the amount to add to your current progress:'
-                : 'Enter the new total amount:',
-            style: const TextStyle(fontSize: 14),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _controller,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: _isAddMode ? 'Amount to Add (৳)' : 'New Total (৳)',
-              border: const OutlineInputBorder(),
-              prefixIcon: Icon(_isAddMode ? Icons.add : Icons.edit),
-            ),
-            autofocus: true,
-            onChanged: (value) {
-              setState(() {});
-            },
-          ),
-          if (_controller.text.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                _isAddMode
-                    ? 'New total will be: ৳${NumberFormat('#,##0').format(widget.currentAmount + (double.tryParse(_controller.text) ?? 0))}'
-                    : 'Change: ${(double.tryParse(_controller.text) ?? 0) >= widget.currentAmount ? "+" : ""}৳${NumberFormat('#,##0').format((double.tryParse(_controller.text) ?? 0) - widget.currentAmount)}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.green[700],
-                  fontWeight: FontWeight.bold,
-                ),
+                ],
               ),
             ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ChoiceChip(
-                  label: const Text('Add Amount'),
-                  selected: _isAddMode,
-                  onSelected: (selected) {
-                    setState(() {
-                      _isAddMode = true;
-                      _controller.text = '';
-                    });
-                  },
+            const SizedBox(height: 20),
+            
+            // Input instruction
+            Text(
+              _isAddMode 
+                  ? 'How much did you save?'
+                  : 'What\'s your new total?',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[700],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 12),
+            
+            // Amount input field
+            TextField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: _isAddMode ? 'Amount to Add' : 'New Total Amount',
+                prefixIcon: Icon(modeIcon, color: modeColor),
+                prefixText: '৳ ',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: modeColor, width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: ChoiceChip(
-                  label: const Text('Set Total'),
-                  selected: !_isAddMode,
-                  onSelected: (selected) {
-                    setState(() {
-                      _isAddMode = false;
-                      _controller.text = widget.currentAmount.toStringAsFixed(0);
-                    });
-                  },
+              autofocus: true,
+              onChanged: (value) {
+                setState(() {});
+              },
+            ),
+            
+            // Preview calculation
+            if (_controller.text.isNotEmpty)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.only(top: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: modeColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: modeColor.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.calculate, color: modeColor, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Preview',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (_isAddMode) ...[
+                      _buildPreviewRow(
+                        'Current',
+                        '৳${NumberFormat('#,##0').format(widget.currentAmount)}',
+                        Colors.grey[600]!,
+                      ),
+                      const SizedBox(height: 4),
+                      _buildPreviewRow(
+                        'Adding',
+                        '+ ৳${NumberFormat('#,##0').format(double.tryParse(_controller.text) ?? 0)}',
+                        modeColor,
+                      ),
+                      const Divider(height: 16),
+                      _buildPreviewRow(
+                        'New Total',
+                        '৳${NumberFormat('#,##0').format(widget.currentAmount + (double.tryParse(_controller.text) ?? 0))}',
+                        modeColor,
+                        isBold: true,
+                      ),
+                    ] else ...[
+                      _buildPreviewRow(
+                        'Previous',
+                        '৳${NumberFormat('#,##0').format(widget.currentAmount)}',
+                        Colors.grey[600]!,
+                      ),
+                      const SizedBox(height: 4),
+                      _buildPreviewRow(
+                        'Change',
+                        '${(double.tryParse(_controller.text) ?? 0) >= widget.currentAmount ? "+" : ""}৳${NumberFormat('#,##0').format((double.tryParse(_controller.text) ?? 0) - widget.currentAmount)}',
+                        (double.tryParse(_controller.text) ?? 0) >= widget.currentAmount 
+                            ? Colors.green 
+                            : Colors.red,
+                      ),
+                      const Divider(height: 16),
+                      _buildPreviewRow(
+                        'New Total',
+                        '৳${NumberFormat('#,##0').format(double.tryParse(_controller.text) ?? 0)}',
+                        modeColor,
+                        isBold: true,
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -492,7 +613,81 @@ class _UpdateProgressDialogState extends State<_UpdateProgressDialog> {
               if (mounted) Navigator.of(context).pop();
             }
           },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: modeColor,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
           child: const Text('Update'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModeChip({
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? color : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? Colors.white : Colors.grey[600],
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? Colors.white : Colors.grey[600],
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPreviewRow(String label, String value, Color color, {bool isBold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey[700],
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: isBold ? 16 : 13,
+            color: color,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+          ),
         ),
       ],
     );

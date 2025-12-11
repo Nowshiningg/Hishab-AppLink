@@ -488,7 +488,7 @@ class DashboardTab extends StatelessWidget {
                             ),
                             const SizedBox(height: 12),
                             SizedBox(
-                              height: 160,
+                              height: 140,
                               child: ListView.separated(
                                 scrollDirection: Axis.horizontal,
                                 itemCount: activeGoals.length,
@@ -698,7 +698,7 @@ class DashboardTab extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-        constraints: const BoxConstraints(minHeight: 120),
+        constraints: const BoxConstraints(minHeight: 80),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
