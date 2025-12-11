@@ -163,7 +163,7 @@ class DashboardTab extends StatelessWidget {
           child: CustomScrollView(
             slivers: [
               SliverAppBar(
-                expandedHeight: 280,
+                expandedHeight: 300,
                 floating: false,
                 pinned: true,
                 backgroundColor: _getStatusColor(spendingStatus),
@@ -673,6 +673,7 @@ class DashboardTab extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        constraints: const BoxConstraints(minHeight: 120),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -692,6 +693,7 @@ class DashboardTab extends StatelessWidget {
           ],
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: Colors.white, size: 32),
@@ -699,7 +701,7 @@ class DashboardTab extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              maxLines: 2,
+              maxLines: 3,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Colors.white,
