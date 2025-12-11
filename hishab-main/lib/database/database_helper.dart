@@ -6,6 +6,10 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/expense.dart';
 import '../models/category_model.dart';
 import '../models/income.dart';
+import '../models/savings_goal.dart';
+import '../models/wishlist_item.dart';
+import '../models/achievement.dart';
+import '../models/streak.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -25,7 +29,7 @@ class DatabaseHelper {
       databaseFactory = databaseFactoryFfiWeb;
       return await openDatabase(
         inMemoryDatabasePath,
-        version: 2,
+        version: 4,
         onCreate: _createDB,
         onUpgrade: _upgradeDB,
       );
@@ -35,7 +39,7 @@ class DatabaseHelper {
       final path = join(dbPath, filePath);
       return await openDatabase(
         path,
-        version: 2,
+        version: 4,
         onCreate: _createDB,
         onUpgrade: _upgradeDB,
       );
@@ -100,6 +104,61 @@ class DatabaseHelper {
       )
     ''');
 
+    // Create savings goals table
+    await db.execute('''
+      CREATE TABLE savings_goals (
+        id $idType,
+        title $textType,
+        targetAmount $realType,
+        currentAmount REAL NOT NULL DEFAULT 0,
+        monthlyAllocation REAL NOT NULL DEFAULT 0,
+        targetDate $textType,
+        createdAt $textType,
+        updatedAt $textType,
+        isActive INTEGER NOT NULL DEFAULT 1,
+        notifyOnMilestone INTEGER NOT NULL DEFAULT 1,
+        colorHex TEXT
+      )
+    ''');
+
+    // Create wishlist items table
+    await db.execute('''
+      CREATE TABLE wishlist_items (
+        id $idType,
+        title $textType,
+        price $realType,
+        savedAmount REAL NOT NULL DEFAULT 0,
+        targetDate TEXT,
+        imageUrl TEXT,
+        priority INTEGER NOT NULL DEFAULT 999,
+        createdAt $textType,
+        updatedAt $textType,
+        isPurchased INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+
+    // Create achievements table
+    await db.execute('''
+      CREATE TABLE achievements (
+        id $idType,
+        key $textType UNIQUE,
+        title $textType,
+        description $textType,
+        unlockedAt TEXT
+      )
+    ''');
+
+    // Create streaks table
+    await db.execute('''
+      CREATE TABLE streaks (
+        id $idType,
+        type $textType UNIQUE,
+        current INTEGER NOT NULL DEFAULT 0,
+        best INTEGER NOT NULL DEFAULT 0,
+        lastActiveDate $textType
+      )
+    ''');
+
     // Insert default categories
     await _insertDefaultCategories(db);
   }
@@ -135,6 +194,122 @@ class DatabaseHelper {
         ''');
       } catch (e) {
         print('Error creating category_budgets table: $e');
+      }
+    }
+
+    // Migration from version 2 to version 3 - Gamification features
+    if (oldVersion < 3) {
+      // Create savings_goals table
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS savings_goals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            targetAmount REAL NOT NULL,
+            savedAmount REAL NOT NULL DEFAULT 0,
+            targetDate TEXT NOT NULL,
+            createdAt TEXT NOT NULL,
+            updatedAt TEXT NOT NULL,
+            isActive INTEGER NOT NULL DEFAULT 1,
+            notifyOnMilestone INTEGER NOT NULL DEFAULT 1,
+            colorHex TEXT
+          )
+        ''');
+      } catch (e) {
+        print('Error creating savings_goals table: $e');
+      }
+
+      // Create wishlist_items table
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS wishlist_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            price REAL NOT NULL,
+            savedAmount REAL NOT NULL DEFAULT 0,
+            targetDate TEXT,
+            imageUrl TEXT,
+            priority INTEGER NOT NULL DEFAULT 999,
+            createdAt TEXT NOT NULL,
+            updatedAt TEXT NOT NULL,
+            isPurchased INTEGER NOT NULL DEFAULT 0
+          )
+        ''');
+      } catch (e) {
+        print('Error creating wishlist_items table: $e');
+      }
+
+      // Create achievements table
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS achievements (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            key TEXT NOT NULL UNIQUE,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            unlockedAt TEXT
+          )
+        ''');
+      } catch (e) {
+        print('Error creating achievements table: $e');
+      }
+
+      // Create streaks table
+      try {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS streaks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            type TEXT NOT NULL UNIQUE,
+            current INTEGER NOT NULL DEFAULT 0,
+            best INTEGER NOT NULL DEFAULT 0,
+            lastActiveDate TEXT NOT NULL
+          )
+        ''');
+      } catch (e) {
+        print('Error creating streaks table: $e');
+      }
+    }
+
+    // Migration from version 3 to version 4 - Refactor to allocation-based tracking
+    if (oldVersion < 4) {
+      try {
+        // Check if savings_goals table exists and needs migration
+        var tables = await db.rawQuery(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='savings_goals'"
+        );
+        
+        if (tables.isNotEmpty) {
+          // Rename savedAmount to currentAmount and add monthlyAllocation
+          await db.execute('''
+            CREATE TABLE savings_goals_new (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              title TEXT NOT NULL,
+              targetAmount REAL NOT NULL,
+              currentAmount REAL NOT NULL DEFAULT 0,
+              monthlyAllocation REAL NOT NULL DEFAULT 0,
+              targetDate TEXT NOT NULL,
+              createdAt TEXT NOT NULL,
+              updatedAt TEXT NOT NULL,
+              isActive INTEGER NOT NULL DEFAULT 1,
+              notifyOnMilestone INTEGER NOT NULL DEFAULT 1,
+              colorHex TEXT
+            )
+          ''');
+
+          // Copy data from old table to new table
+          await db.execute('''
+            INSERT INTO savings_goals_new 
+            (id, title, targetAmount, currentAmount, monthlyAllocation, targetDate, createdAt, updatedAt, isActive, notifyOnMilestone, colorHex)
+            SELECT id, title, targetAmount, savedAmount, 0.0, targetDate, createdAt, updatedAt, isActive, notifyOnMilestone, colorHex
+            FROM savings_goals
+          ''');
+
+          // Drop old table and rename new one
+          await db.execute('DROP TABLE savings_goals');
+          await db.execute('ALTER TABLE savings_goals_new RENAME TO savings_goals');
+        }
+      } catch (e) {
+        print('Error upgrading to version 4: $e');
       }
     }
   }
@@ -382,6 +557,181 @@ class DatabaseHelper {
     );
   }
 
+  // Savings Goals operations
+  Future<int> insertSavingsGoal(SavingsGoal goal) async {
+    final db = await database;
+    return await db.insert('savings_goals', goal.toMap());
+  }
+
+  Future<List<SavingsGoal>> getAllSavingsGoals() async {
+    final db = await database;
+    final result = await db.query('savings_goals', orderBy: 'createdAt DESC');
+    return result.map((map) => SavingsGoal.fromMap(map)).toList();
+  }
+
+  Future<List<SavingsGoal>> getActiveSavingsGoals() async {
+    final db = await database;
+    final result = await db.query(
+      'savings_goals',
+      where: 'isActive = ?',
+      whereArgs: [1],
+      orderBy: 'createdAt DESC',
+    );
+    return result.map((map) => SavingsGoal.fromMap(map)).toList();
+  }
+
+  Future<SavingsGoal?> getSavingsGoalById(int id) async {
+    final db = await database;
+    final result = await db.query(
+      'savings_goals',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (result.isEmpty) return null;
+    return SavingsGoal.fromMap(result.first);
+  }
+
+  Future<int> updateSavingsGoal(SavingsGoal goal) async {
+    final db = await database;
+    return await db.update(
+      'savings_goals',
+      goal.toMap(),
+      where: 'id = ?',
+      whereArgs: [goal.id],
+    );
+  }
+
+  Future<int> deleteSavingsGoal(int id) async {
+    final db = await database;
+    return await db.delete('savings_goals', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Wishlist operations
+  Future<int> insertWishlistItem(WishlistItem item) async {
+    final db = await database;
+    return await db.insert('wishlist_items', item.toMap());
+  }
+
+  Future<List<WishlistItem>> getAllWishlistItems() async {
+    final db = await database;
+    final result = await db.query(
+      'wishlist_items',
+      orderBy: 'priority ASC, createdAt DESC',
+    );
+    return result.map((map) => WishlistItem.fromMap(map)).toList();
+  }
+
+  Future<List<WishlistItem>> getActiveWishlistItems() async {
+    final db = await database;
+    final result = await db.query(
+      'wishlist_items',
+      where: 'isPurchased = ?',
+      whereArgs: [0],
+      orderBy: 'priority ASC, createdAt DESC',
+    );
+    return result.map((map) => WishlistItem.fromMap(map)).toList();
+  }
+
+  Future<WishlistItem?> getWishlistItemById(int id) async {
+    final db = await database;
+    final result = await db.query(
+      'wishlist_items',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (result.isEmpty) return null;
+    return WishlistItem.fromMap(result.first);
+  }
+
+  Future<int> updateWishlistItem(WishlistItem item) async {
+    final db = await database;
+    return await db.update(
+      'wishlist_items',
+      item.toMap(),
+      where: 'id = ?',
+      whereArgs: [item.id],
+    );
+  }
+
+  Future<int> deleteWishlistItem(int id) async {
+    final db = await database;
+    return await db.delete('wishlist_items', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Achievement operations
+  Future<int> insertAchievement(Achievement achievement) async {
+    final db = await database;
+    return await db.insert(
+      'achievements',
+      achievement.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<Achievement>> getAllAchievements() async {
+    final db = await database;
+    final result = await db.query('achievements', orderBy: 'unlockedAt DESC');
+    return result.map((map) => Achievement.fromMap(map)).toList();
+  }
+
+  Future<Achievement?> getAchievementByKey(String key) async {
+    final db = await database;
+    final result = await db.query(
+      'achievements',
+      where: 'key = ?',
+      whereArgs: [key],
+    );
+    if (result.isEmpty) return null;
+    return Achievement.fromMap(result.first);
+  }
+
+  Future<int> updateAchievement(Achievement achievement) async {
+    final db = await database;
+    return await db.update(
+      'achievements',
+      achievement.toMap(),
+      where: 'key = ?',
+      whereArgs: [achievement.key],
+    );
+  }
+
+  // Streak operations
+  Future<int> insertStreak(Streak streak) async {
+    final db = await database;
+    return await db.insert(
+      'streaks',
+      streak.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<Streak>> getAllStreaks() async {
+    final db = await database;
+    final result = await db.query('streaks', orderBy: 'current DESC');
+    return result.map((map) => Streak.fromMap(map)).toList();
+  }
+
+  Future<Streak?> getStreakByType(String type) async {
+    final db = await database;
+    final result = await db.query(
+      'streaks',
+      where: 'type = ?',
+      whereArgs: [type],
+    );
+    if (result.isEmpty) return null;
+    return Streak.fromMap(result.first);
+  }
+
+  Future<int> updateStreak(Streak streak) async {
+    final db = await database;
+    return await db.update(
+      'streaks',
+      streak.toMap(),
+      where: 'type = ?',
+      whereArgs: [streak.type],
+    );
+  }
+
   // Clear all data
   Future<void> clearAllData() async {
     final db = await database;
@@ -404,6 +754,26 @@ class DatabaseHelper {
       await db.delete('category_budgets');
     } catch (e) {
       print('Error clearing category_budgets: $e');
+    }
+    try {
+      await db.delete('savings_goals');
+    } catch (e) {
+      print('Error clearing savings_goals: $e');
+    }
+    try {
+      await db.delete('wishlist_items');
+    } catch (e) {
+      print('Error clearing wishlist_items: $e');
+    }
+    try {
+      await db.delete('achievements');
+    } catch (e) {
+      print('Error clearing achievements: $e');
+    }
+    try {
+      await db.delete('streaks');
+    } catch (e) {
+      print('Error clearing streaks: $e');
     }
     try {
       // Don't delete categories, just reset them

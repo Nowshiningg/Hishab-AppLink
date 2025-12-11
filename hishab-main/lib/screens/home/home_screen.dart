@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../providers/finance_provider.dart';
+import '../../widgets/goal_progress_card.dart';
 import '../expense/add_expense_screen.dart';
 import '../expense/expense_list_screen.dart';
 import '../categories/category_breakdown_screen.dart';
@@ -11,6 +12,8 @@ import '../chatbot/chatbot_screen.dart';
 import '../rewards/rewards_screen.dart';
 import '../budget/category_budgets_screen.dart';
 import '../premium/premium_subscription_screen.dart';
+import '../goals/goal_create_screen.dart';
+import '../goals/goal_detail_screen.dart';
 import '../../localization/app_localizations.dart';
 import '../../services/banglalink_integration_service.dart';
 
@@ -364,6 +367,130 @@ class DashboardTab extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
+                    
+                    // Savings Goals Section
+                    Consumer<FinanceProvider>(
+                      builder: (context, provider, _) {
+                        final activeGoals = provider.goals.take(3).toList();
+                        
+                        if (activeGoals.isEmpty) {
+                          return Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF4ECDC4).withOpacity(0.1),
+                                  const Color(0xFF4ECDC4).withOpacity(0.05),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFF4ECDC4).withOpacity(0.3),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.emoji_events,
+                                  size: 48,
+                                  color: Color(0xFF4ECDC4),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Start Your First Savings Goal!',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Track your progress and stay motivated',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (ctx) => const GoalCreateScreen(),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.add_circle),
+                                  color: const Color(0xFF4ECDC4),
+                                  iconSize: 32,
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                        
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Savings Goals',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (ctx) => const GoalCreateScreen(),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Add'),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              height: 160,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: activeGoals.length,
+                                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                                itemBuilder: (context, index) {
+                                  final goal = activeGoals[index];
+                                  return GoalProgressCard(
+                                    goal: goal,
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (ctx) => GoalDetailScreen(
+                                            goalId: goal.id!,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    
                     _buildSummaryCard(
                       loc.translate('thisWeek'),
                       weekTotal,
