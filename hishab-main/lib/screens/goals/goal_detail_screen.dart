@@ -60,6 +60,9 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const primaryColor = Color(0xFF4ECDC4);
+    final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Goal Details'),
@@ -81,7 +84,19 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
           final progress = goal.progressPercent;
           final color = _parseColor(goal.colorHex) ?? const Color(0xFF4ECDC4);
 
-          return ListView(
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  primaryColor.withOpacity(0.1),
+                  backgroundColor,
+                ],
+                stops: const [0.0, 0.3],
+              ),
+            ),
+            child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
               // Goal header card
@@ -256,6 +271,7 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                 ),
               ],
             ],
+            ),
           );
         },
       ),

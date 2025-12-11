@@ -14,12 +14,14 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const primaryColor = Color(0xFFF16725);
+    final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
+
     if (_showUnsubscribeDialog) {
       return _buildUnsubscribeConfirmation();
     }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
@@ -44,7 +46,19 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              primaryColor.withOpacity(0.1),
+              backgroundColor,
+            ],
+            stops: const [0.0, 0.3],
+          ),
+        ),
+        child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -273,6 +287,7 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
             ),
             const SizedBox(height: 30),
           ],
+        ),
         ),
       ),
     );

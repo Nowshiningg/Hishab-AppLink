@@ -17,9 +17,10 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     final provider = Provider.of<FinanceProvider>(context);
+    const primaryColor = Color(0xFFF16725);
+    final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: const Color(0xFFF16725),
         elevation: 0,
@@ -36,7 +37,19 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
           ),
         ),
       ),
-      body: FutureBuilder<Map<String, Map<String, double>>>(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              primaryColor.withOpacity(0.1),
+              backgroundColor,
+            ],
+            stops: const [0.0, 0.3],
+          ),
+        ),
+        child: FutureBuilder<Map<String, Map<String, double>>>(
         future: provider.getCategoryBudgetStatus(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -117,6 +130,7 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
             ],
           );
         },
+        ),
       ),
     );
   }
