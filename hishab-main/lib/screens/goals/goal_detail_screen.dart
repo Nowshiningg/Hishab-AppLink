@@ -174,10 +174,15 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () => _showUpdateProgressDialog(goal),
                       icon: const Icon(Icons.edit_note, color: Colors.white),
-                      label: const Text('Update Progress', style: TextStyle(color: Colors.white)),
+                      label: const Text('Update Progress', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                         backgroundColor: const Color(0xFF4ECDC4),
+                        elevation: 4,
+                        shadowColor: const Color(0xFF4ECDC4).withOpacity(0.4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
                     ),
                   ),
@@ -191,10 +196,14 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
                           ),
                         );
                       },
-                      icon: const Icon(Icons.edit),
-                      label: const Text('Edit'),
+                      icon: Icon(Icons.edit, color: color),
+                      label: Text('Edit Goal', style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.w600)),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                        side: BorderSide(color: color, width: 2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
                     ),
                   ),
@@ -204,22 +213,40 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
               if (goal.isCompleted) ...[
                 const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green),
+                    gradient: LinearGradient(
+                      colors: [Colors.green.shade50, Colors.green.shade100],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.green.shade400, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.green.withOpacity(0.2),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.celebration, color: Colors.green, size: 32),
-                      SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade100,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.celebration, color: Colors.green.shade700, size: 32),
+                      ),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Text(
                           'Congratulations! Goal completed! 🎉',
                           style: TextStyle(
-                            color: Colors.green,
-                            fontSize: 16,
+                            color: Colors.green.shade900,
+                            fontSize: 17,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -236,35 +263,90 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
   }
 
   Widget _buildInfoCard(String label, String value, IconData icon) {
+    // Determine card color based on label
+    Color cardColor;
+    Color iconColor;
+    Color labelColor;
+    Color valueColor;
+    
+    if (label == 'Remaining') {
+      cardColor = Colors.orange.shade50;
+      iconColor = Colors.orange.shade600;
+      labelColor = Colors.orange.shade800;
+      valueColor = Colors.orange.shade900;
+    } else if (label == 'Target Date') {
+      cardColor = Colors.blue.shade50;
+      iconColor = Colors.blue.shade600;
+      labelColor = Colors.blue.shade800;
+      valueColor = Colors.blue.shade900;
+    } else if (label == 'Monthly Allocation') {
+      cardColor = Colors.purple.shade50;
+      iconColor = Colors.purple.shade600;
+      labelColor = Colors.purple.shade800;
+      valueColor = Colors.purple.shade900;
+    } else {
+      cardColor = Colors.grey[100]!;
+      iconColor = const Color(0xFF4ECDC4);
+      labelColor = Colors.grey[600]!;
+      valueColor = Colors.black87;
+    }
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          colors: [cardColor, cardColor.withOpacity(0.6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: iconColor.withOpacity(0.3),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: iconColor.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(icon, size: 32, color: const Color(0xFF4ECDC4)),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, size: 28, color: iconColor),
+          ),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: labelColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 6),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: valueColor,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -276,58 +358,107 @@ class _GoalDetailScreenState extends State<GoalDetailScreen> {
     final projectedDate = goal.projectedCompletionDate;
     final monthsNeeded = goal.monthsToReachGoal;
     
+    final cardColor = isOnTrack ? Colors.green : Colors.orange;
+    
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isOnTrack ? Colors.green[50] : Colors.orange[50],
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          colors: [
+            cardColor.shade50,
+            cardColor.shade100,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isOnTrack ? Colors.green : Colors.orange,
+          color: cardColor.shade400,
           width: 2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: cardColor.withOpacity(0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                isOnTrack ? Icons.check_circle : Icons.warning,
-                color: isOnTrack ? Colors.green : Colors.orange,
-                size: 28,
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: cardColor.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  isOnTrack ? Icons.check_circle : Icons.warning_amber,
+                  color: cardColor.shade700,
+                  size: 28,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   isOnTrack ? 'On Track!' : 'Behind Schedule',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 19,
                     fontWeight: FontWeight.bold,
-                    color: isOnTrack ? Colors.green : Colors.orange,
+                    color: cardColor.shade900,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            monthsNeeded < 999
-                ? 'At your current allocation of ৳${NumberFormat('#,##0').format(goal.monthlyAllocation)}/month, '
-                    'you will reach this goal in $monthsNeeded months (${DateFormat.yMMMd().format(projectedDate)}).'
-                : 'Set a monthly allocation to see your projected completion date.',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[700],
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              monthsNeeded < 999
+                  ? 'At your current allocation of ৳${NumberFormat('#,##0').format(goal.monthlyAllocation)}/month, '
+                      'you will reach this goal in $monthsNeeded months (${DateFormat.yMMMd().format(projectedDate)}).'
+                  : 'Set a monthly allocation to see your projected completion date.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[800],
+                height: 1.4,
+              ),
             ),
           ),
           if (!isOnTrack && monthsNeeded < 999) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Tip: Increase your monthly allocation to ${NumberFormat('#,##0').format(goal.remainingAmount / goal.monthsToReachGoal)}৳/month to reach your target on time.',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-                fontStyle: FontStyle.italic,
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: cardColor.shade200.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: cardColor.shade300),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.lightbulb_outline, color: cardColor.shade700, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Tip: Increase your monthly allocation to ৳${NumberFormat('#,##0').format(goal.remainingAmount / goal.monthsToReachGoal)}/month to reach your target on time.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: cardColor.shade900,
+                        fontStyle: FontStyle.italic,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
