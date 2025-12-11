@@ -3,10 +3,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/expense.dart';
 import '../models/category_model.dart';
 import '../models/income.dart';
+import '../models/savings_goal.dart';
+import '../models/wishlist_item.dart';
+import '../models/achievement.dart';
+import '../models/streak.dart';
 import '../database/database_helper.dart';
+import '../services/goals_service.dart';
+import '../services/wishlist_service.dart';
+import '../services/achievements_service.dart';
+import '../services/notification_service.dart';
 
 class FinanceProvider extends ChangeNotifier {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  final GoalsService _goalsService = GoalsService();
+  final WishlistService _wishlistService = WishlistService();
+  final AchievementsService _achievementsService = AchievementsService();
+  final NotificationService _notificationService = NotificationService();
 
   List<Expense> _expenses = [];
   List<CategoryModel> _categories = [];
@@ -20,6 +32,12 @@ class FinanceProvider extends ChangeNotifier {
   int _consecutiveDays = 0;
   bool _isPremiumSubscribed = false;
   bool _showPremiumThankYou = false;
+
+  // Gamification state
+  List<SavingsGoal> _goals = [];
+  List<WishlistItem> _wishlist = [];
+  List<Achievement> _achievements = [];
+  List<Streak> _streaks = [];
 
   List<Expense> get expenses => _expenses;
   List<CategoryModel> get categories => _categories;
@@ -36,6 +54,12 @@ class FinanceProvider extends ChangeNotifier {
   bool get isPremiumSubscribed => _isPremiumSubscribed;
   bool get showPremiumThankYou => _showPremiumThankYou;
 
+  // Gamification getters
+  List<SavingsGoal> get goals => _goals;
+  List<WishlistItem> get wishlist => _wishlist;
+  List<Achievement> get achievements => _achievements;
+  List<Streak> get streaks => _streaks;
+
   // Initialize data
   Future<void> initialize() async {
     _isLoading = true;
@@ -51,6 +75,14 @@ class FinanceProvider extends ChangeNotifier {
       await loadRewards();
       await calculateDailyStreak();
       await loadPremiumStatus();
+      
+      // Initialize gamification features
+      await _achievementsService.initializeAchievements();
+      await loadGoals();
+      await loadWishlist();
+      await loadAchievements();
+      await loadStreaks();
+      await _notificationService.initialize();
     } catch (e) {
       debugPrint('Error initializing: $e');
     } finally {
@@ -564,6 +596,226 @@ class FinanceProvider extends ChangeNotifier {
   void dismissPremiumThankYou() {
     _showPremiumThankYou = false;
     notifyListeners();
+  }
+
+  // ===== Savings Goals Methods =====
+
+  Future<void> loadGoals() async {
+    _goals = await _goalsService.getActiveGoals();
+    notifyListeners();
+  }
+
+  Future<void> addGoal(SavingsGoal goal) async {
+    await _goalsService.createGoal(
+      title: goal.title,
+      targetAmount: goal.targetAmount,
+      targetDate: DateTime.parse(goal.targetDate),
+      colorHex: goal.colorHex,
+      notifyOnMilestone: goal.notifyOnMilestone,
+    );
+    
+    // Check first goal achievement
+    await _achievementsService.unlockAchievement('first_goal');
+    
+    await loadGoals();
+    await loadAchievements();
+  }
+
+  Future<void> updateGoal(SavingsGoal goal) async {
+    await _goalsService.updateGoal(goal);
+    await loadGoals();
+  }
+
+  Future<void> deleteGoal(int goalId) async {
+    await _goalsService.deleteGoal(goalId);
+    await _notificationService.cancelGoalReminder(goalId);
+    await loadGoals();
+  }
+
+  /// Update progress for a goal (manual tracking)
+  Future<void> updateGoalProgress(int goalId, double newAmount) async {
+    final oldGoal = _goals.firstWhere((g) => g.id == goalId);
+    final updatedGoal = await _goalsService.updateProgress(goalId, newAmount);
+    
+    if (updatedGoal != null) {
+      // Check for milestone notifications
+      final milestone = _goalsService.checkMilestone(oldGoal, updatedGoal);
+      if (milestone != null) {
+        await _notificationService.notifyMilestone(
+          goalId,
+          milestone,
+          goalTitle: updatedGoal.title,
+        );
+      }
+
+      // Check for goal completion
+      if (updatedGoal.isCompleted && !oldGoal.isCompleted) {
+        await _notificationService.notifyGoalCompleted(updatedGoal.title);
+        
+        // Check goal completion achievements
+        final completedCount = await _goalsService.getCompletedGoalsCount();
+        final unlockedAchievements = await _achievementsService.checkGoalAchievements(completedCount);
+        
+        for (final key in unlockedAchievements) {
+          final achievement = await _dbHelper.getAchievementByKey(key);
+          if (achievement != null) {
+            await _notificationService.notifyAchievement(
+              key,
+              achievementTitle: achievement.title,
+            );
+          }
+        }
+      }
+
+      // Check total progress achievements
+      final totalProgress = await _goalsService.getTotalProgress();
+      final savedAchievements = await _achievementsService.checkTotalSavedAchievements(totalProgress);
+      for (final key in savedAchievements) {
+        final achievement = await _dbHelper.getAchievementByKey(key);
+        if (achievement != null) {
+          await _notificationService.notifyAchievement(
+            key,
+            achievementTitle: achievement.title,
+          );
+        }
+      }
+
+      await loadGoals();
+      await loadAchievements();
+    }
+  }
+
+  double getGoalProgressPercent(int goalId) {
+    try {
+      final goal = _goals.firstWhere((g) => g.id == goalId);
+      return goal.progressPercent;
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
+  // ===== Wishlist Methods =====
+
+  Future<void> loadWishlist() async {
+    _wishlist = await _wishlistService.getActiveItems();
+    notifyListeners();
+  }
+
+  Future<void> addWishlistItem(WishlistItem item) async {
+    await _wishlistService.createWishlistItem(
+      title: item.title,
+      price: item.price,
+      targetDate: item.targetDate != null ? DateTime.parse(item.targetDate!) : null,
+      imageUrl: item.imageUrl,
+      priority: item.priority,
+    );
+    await loadWishlist();
+  }
+
+  Future<void> updateWishlistItem(WishlistItem item) async {
+    await _wishlistService.updateItem(item);
+    await loadWishlist();
+  }
+
+  Future<void> deleteWishlistItem(int itemId) async {
+    await _wishlistService.deleteItem(itemId);
+    await loadWishlist();
+  }
+
+  Future<void> depositToWishlistItem(int itemId, double amount) async {
+    await _wishlistService.depositToItem(itemId, amount);
+    await loadWishlist();
+  }
+
+  Future<void> markWishlistItemPurchased(int itemId) async {
+    await _wishlistService.markAsPurchased(itemId);
+    
+    // Check purchased achievement
+    final purchasedCount = await _wishlistService.getPurchasedItemsCount();
+    if (purchasedCount >= 1) {
+      await _achievementsService.unlockAchievement('wishlist_purchased_1');
+    }
+    
+    await loadWishlist();
+    await loadAchievements();
+  }
+
+  // ===== Achievement Methods =====
+
+  Future<void> loadAchievements() async {
+    _achievements = await _achievementsService.getAllAchievements();
+    notifyListeners();
+  }
+
+  List<Achievement> get unlockedAchievements {
+    return _achievements.where((a) => a.isUnlocked).toList();
+  }
+
+  List<Achievement> get lockedAchievements {
+    return _achievements.where((a) => !a.isUnlocked).toList();
+  }
+
+  // ===== Streak Methods =====
+
+  Future<void> loadStreaks() async {
+    _streaks = await _achievementsService.getAllStreaks();
+    notifyListeners();
+  }
+
+  Future<void> updateDailyStreak() async {
+    final streak = await _achievementsService.updateStreak('daily_login');
+    
+    // Check streak achievements
+    final unlockedAchievements = await _achievementsService.checkStreakAchievements(streak.current);
+    for (final key in unlockedAchievements) {
+      final achievement = await _dbHelper.getAchievementByKey(key);
+      if (achievement != null) {
+        await _notificationService.notifyAchievement(
+          key,
+          achievementTitle: achievement.title,
+        );
+      }
+    }
+    
+    await loadStreaks();
+    await loadAchievements();
+  }
+
+  Streak? get dailyStreak {
+    try {
+      return _streaks.firstWhere((s) => s.type == 'daily_login');
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ===== Savings Rate Calculation =====
+
+  double getSavingsRate() {
+    final monthlyIncome = _income?.monthlyIncome ?? 0;
+    if (monthlyIncome <= 0) return 0.0;
+    
+    final monthTotal = getThisMonthTotal();
+    final saved = monthlyIncome - monthTotal;
+    return (saved / monthlyIncome).clamp(0.0, 1.0);
+  }
+
+  // Check savings rate achievements
+  Future<void> checkSavingsRateAchievements() async {
+    final rate = getSavingsRate();
+    final unlockedAchievements = await _achievementsService.checkSavingsRateAchievements(rate);
+    
+    for (final key in unlockedAchievements) {
+      final achievement = await _dbHelper.getAchievementByKey(key);
+      if (achievement != null) {
+        await _notificationService.notifyAchievement(
+          key,
+          achievementTitle: achievement.title,
+        );
+      }
+    }
+    
+    await loadAchievements();
   }
 }
 

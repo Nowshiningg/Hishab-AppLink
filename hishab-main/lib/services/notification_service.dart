@@ -180,4 +180,162 @@ class NotificationService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('reminder_time') ?? '20:00';
   }
+
+  // ===== Savings Goals Notifications =====
+
+  /// Schedule a goal reminder
+  Future<void> scheduleGoalReminder(
+    int goalId,
+    DateTime reminderTime, {
+    String? goalTitle,
+  }) async {
+    if (!_isInitialized) await initialize();
+
+    const androidDetails = AndroidNotificationDetails(
+      'goals_reminders',
+      'Savings Goals Reminders',
+      channelDescription: 'Reminders for savings goals',
+      importance: Importance.high,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const iosDetails = DarwinNotificationDetails();
+
+    const notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.zonedSchedule(
+      goalId, // Use goalId as notification ID
+      'Savings Goal Reminder',
+      goalTitle != null
+          ? 'Don\'t forget to save towards "$goalTitle"!'
+          : 'Don\'t forget to save towards your goal!',
+      tz.TZDateTime.from(reminderTime, tz.local),
+      notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      payload: 'goal:$goalId',
+    );
+  }
+
+  /// Cancel a goal reminder
+  Future<void> cancelGoalReminder(int goalId) async {
+    await _notifications.cancel(goalId);
+  }
+
+  /// Show immediate milestone notification
+  Future<void> notifyMilestone(
+    int goalId,
+    int milestonePercent, {
+    String? goalTitle,
+  }) async {
+    if (!_isInitialized) await initialize();
+
+    const androidDetails = AndroidNotificationDetails(
+      'goals_milestones',
+      'Savings Milestones',
+      channelDescription: 'Notifications for savings goal milestones',
+      importance: Importance.max,
+      priority: Priority.max,
+      playSound: true,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentSound: true,
+    );
+
+    const notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    final title = '🎉 Milestone Reached!';
+    final body = goalTitle != null
+        ? 'You\'re $milestonePercent% of the way to "$goalTitle"!'
+        : 'You\'re $milestonePercent% of the way to your goal!';
+
+    await _notifications.show(
+      10000 + goalId, // Offset to avoid collision with reminder IDs
+      title,
+      body,
+      notificationDetails,
+      payload: 'milestone:$goalId:$milestonePercent',
+    );
+  }
+
+  /// Show achievement unlocked notification
+  Future<void> notifyAchievement(
+    String achievementKey, {
+    String? achievementTitle,
+  }) async {
+    if (!_isInitialized) await initialize();
+
+    const androidDetails = AndroidNotificationDetails(
+      'achievements',
+      'Achievements',
+      channelDescription: 'Achievement unlock notifications',
+      importance: Importance.max,
+      priority: Priority.max,
+      playSound: true,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentSound: true,
+    );
+
+    const notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    final title = '🏆 Achievement Unlocked!';
+    final body = achievementTitle ?? 'You\'ve unlocked a new achievement!';
+
+    await _notifications.show(
+      achievementKey.hashCode, // Use hash as unique ID
+      title,
+      body,
+      notificationDetails,
+      payload: 'achievement:$achievementKey',
+    );
+  }
+
+  /// Show goal completed celebration notification
+  Future<void> notifyGoalCompleted(String goalTitle) async {
+    if (!_isInitialized) await initialize();
+
+    const androidDetails = AndroidNotificationDetails(
+      'goals_completed',
+      'Goals Completed',
+      channelDescription: 'Celebrations for completed goals',
+      importance: Importance.max,
+      priority: Priority.max,
+      playSound: true,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const iosDetails = DarwinNotificationDetails(
+      presentSound: true,
+    );
+
+    const notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _notifications.show(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      '🎊 Goal Completed!',
+      'Congratulations! You\'ve reached your goal: "$goalTitle"',
+      notificationDetails,
+      payload: 'goal_completed',
+    );
+  }
 }
+
