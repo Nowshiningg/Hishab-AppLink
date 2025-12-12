@@ -106,6 +106,13 @@ class FinanceProvider extends ChangeNotifier {
     await saveName(name);
   }
 
+  // Save user phone
+  Future<void> setUserPhone(String phone) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_phone', phone);
+    notifyListeners();
+  }
+
   // Load categories
   Future<void> loadCategories() async {
     _categories = await _dbHelper.getAllCategories();
