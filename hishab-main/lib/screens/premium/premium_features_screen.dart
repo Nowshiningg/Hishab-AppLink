@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/finance_provider.dart';
+import 'pdf_report_generation_screen.dart';
 
 class PremiumFeaturesScreen extends StatefulWidget {
   const PremiumFeaturesScreen({super.key});
@@ -184,11 +185,23 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildFeatureCard(
-                        icon: Icons.picture_as_pdf,
-                        title: 'PDF Reports',
-                        description: 'Export reports',
-                        color: const Color(0xFFFF6B6B),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const PdfReportGenerationScreen(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: _buildFeatureCard(
+                          icon: Icons.picture_as_pdf,
+                          title: 'PDF Reports',
+                          description: 'Export reports',
+                          color: const Color(0xFFFF6B6B),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -200,7 +213,7 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
                         color: const Color(0xFF47B881),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),

@@ -43,7 +43,17 @@ class ApiConfig {
   // Download API Endpoints
   static const String apkDownloadEndpoint = '$downloadBase/apk';
   static const String apkInfoEndpoint = '$downloadBase/info';
-  
+
+  // Analytics API Endpoints
+  static const String analyticsBase = '/analytics';
+  static const String ruleBasedAnalyticsEndpoint = '$analyticsBase/rule-based';
+  static const String aiPoweredAnalyticsEndpoint = '$analyticsBase/ai-powered';
+
+  // PDF Report API Endpoints
+  static const String pdfReportBase = '/api/pdf-report';
+  static const String analyticsPdfEndpoint = '$pdfReportBase/analytics';
+  static const String pdfReportHealthEndpoint = '$pdfReportBase/health';
+
   // Charge Types for CaaS
   static const String pdfExportCharge = 'pdf_export';
   static const String cloudStorageCharge = 'cloud_storage';
