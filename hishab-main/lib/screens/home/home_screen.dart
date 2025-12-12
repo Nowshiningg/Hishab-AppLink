@@ -138,6 +138,8 @@ class DashboardTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
+    const primaryColor = Color(0xFFF16725);
+    final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
 
     return Consumer<FinanceProvider>(
       builder: (context, provider, child) {
@@ -151,7 +153,19 @@ class DashboardTab extends StatelessWidget {
         final weekTotal = provider.getThisWeekTotal();
         final monthTotal = provider.getThisMonthTotal();
 
-        return SafeArea(
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                primaryColor.withOpacity(0.1),
+                backgroundColor,
+              ],
+              stops: const [0.0, 0.3],
+            ),
+          ),
+          child: SafeArea(
           child: CustomScrollView(
             slivers: [
               SliverAppBar(
@@ -391,6 +405,7 @@ class DashboardTab extends StatelessWidget {
                 ),
               ),
             ],
+          ),
           ),
         );
       },
