@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import '../../providers/finance_provider.dart';
 import '../../models/expense.dart';
 import '../../localization/app_localizations.dart';
+import '../../services/expense_service.dart';
+import '../../services/category_service.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   const AddExpenseScreen({super.key});
@@ -347,6 +349,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     });
 
     try {
+      // First, save to local database
       final expense = Expense(
         amount: double.parse(_amountController.text),
         category: _selectedCategory!,
@@ -356,6 +359,63 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       );
 
       await context.read<FinanceProvider>().addExpense(expense);
+
+      // Then, sync with backend API
+      try {
+        // Get category ID from backend categories
+        final allCategories = await CategoryService.getAllCategories();
+        
+        int? categoryId;
+        int? customCategoryId;
+        
+        if (allCategories != null) {
+          // Check if it's a default category
+          final defaultCategories = allCategories['default'] as List<dynamic>?;
+          if (defaultCategories != null) {
+            final defaultCategory = defaultCategories.firstWhere(
+              (cat) => cat['name'] == _selectedCategory,
+              orElse: () => null,
+            );
+            if (defaultCategory != null) {
+              categoryId = defaultCategory['id'] as int;
+            }
+          }
+          
+          // If not found in default, check custom categories
+          if (categoryId == null) {
+            final customCategories = allCategories['custom'] as List<dynamic>?;
+            if (customCategories != null) {
+              final customCategory = customCategories.firstWhere(
+                (cat) => cat['name'] == _selectedCategory,
+                orElse: () => null,
+              );
+              if (customCategory != null) {
+                customCategoryId = customCategory['id'] as int;
+              }
+            }
+          }
+        }
+
+        // Call backend API to sync expense
+        if (categoryId != null || customCategoryId != null) {
+          final apiResponse = await ExpenseService.addExpenseManually(
+            amount: expense.amount,
+            categoryId: categoryId,
+            customCategoryId: customCategoryId,
+            note: expense.note.isEmpty ? null : expense.note,
+            expenseDate: ExpenseService.formatDate(expense.date),
+          );
+
+          if (apiResponse != null) {
+            print('✅ Expense synced to backend: ${apiResponse['id']}');
+          } else {
+            print('⚠️ Failed to sync expense to backend (saved locally)');
+          }
+        }
+      } catch (apiError) {
+        // API sync failed, but local save succeeded
+        print('⚠️ API sync error: $apiError (expense saved locally)');
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

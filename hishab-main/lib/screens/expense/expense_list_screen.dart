@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../providers/finance_provider.dart';
 import '../../models/expense.dart';
 import '../../localization/app_localizations.dart';
+import '../../services/expense_service.dart';
 
 class ExpenseListScreen extends StatelessWidget {
   const ExpenseListScreen({super.key});
@@ -201,8 +202,24 @@ class ExpenseListScreen extends StatelessWidget {
           ),
         );
       },
-      onDismissed: (direction) {
+      onDismissed: (direction) async {
+        // Delete from local database
         provider.deleteExpense(expense.id!);
+        
+        // Sync with backend API
+        try {
+          if (expense.id != null) {
+            final success = await ExpenseService.deleteExpense(expense.id!);
+            if (success) {
+              print('✅ Expense deleted from backend: ${expense.id}');
+            } else {
+              print('⚠️ Failed to delete expense from backend (deleted locally)');
+            }
+          }
+        } catch (e) {
+          print('⚠️ API deletion error: $e (expense deleted locally)');
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(loc.translate('expenseDeleted')),
@@ -349,7 +366,23 @@ class ExpenseListScreen extends StatelessWidget {
                       );
 
                       if (shouldDelete == true) {
+                        // Delete from local database
                         provider.deleteExpense(expense.id!);
+                        
+                        // Sync with backend API
+                        try {
+                          if (expense.id != null) {
+                            final success = await ExpenseService.deleteExpense(expense.id!);
+                            if (success) {
+                              print('✅ Expense deleted from backend: ${expense.id}');
+                            } else {
+                              print('⚠️ Failed to delete expense from backend (deleted locally)');
+                            }
+                          }
+                        } catch (e) {
+                          print('⚠️ API deletion error: $e (expense deleted locally)');
+                        }
+                        
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(AppLocalizations.of(context).translate('expenseDeleted')),
