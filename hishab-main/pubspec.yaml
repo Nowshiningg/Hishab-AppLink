@@ -48,7 +48,7 @@ dependencies:
   
   # UI Components
   fl_chart: ^0.65.0
-  intl: ^0.20.2
+  intl: ^0.19.0
 
   # Shared Preferences for onboarding
   shared_preferences: ^2.2.2
