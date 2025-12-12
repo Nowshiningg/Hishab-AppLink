@@ -42,6 +42,9 @@ class _LoginScreenState extends State<LoginScreen> {
         // Store phone number in provider for compatibility
         final provider = context.read<FinanceProvider>();
         await provider.setUserPhone(_phoneController.text.trim());
+        
+        // Load JWT token into provider
+        await provider.loadJwtToken();
 
         if (mounted) {
           Navigator.of(context).pushReplacement(

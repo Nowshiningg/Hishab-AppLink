@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/finance_provider.dart';
+import '../../services/subscription_service.dart';
 import 'premium_thank_you_screen.dart';
 import 'premium_features_screen.dart';
 
@@ -23,19 +25,47 @@ class _PremiumSubscriptionScreenState extends State<PremiumSubscriptionScreen> {
     setState(() => _isProcessing = true);
     
     try {
-      // Subscribe using provider (demo mode)
-      await context.read<FinanceProvider>().subscribeToPremium();
+      // Get user's phone number from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final phoneNumber = prefs.getString('user_phone');
       
-      // Navigate to thank you screen
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const PremiumThankYouScreen(),
-          ),
+      if (phoneNumber == null || phoneNumber.isEmpty) {
+        _showMessage('Please login first to subscribe', isError: true);
+        setState(() => _isProcessing = false);
+        return;
+      }
+
+      // Call backend API to activate subscription
+      final result = await SubscriptionService.activateSubscription(phoneNumber);
+      
+      if (result['success'] == true) {
+        // Update local provider state
+        await context.read<FinanceProvider>().subscribeToPremium();
+        
+        // Show success message
+        _showMessage(
+          '✅ Premium subscription activated successfully!',
+          isError: false,
         );
+        
+        // Navigate to thank you screen
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const PremiumThankYouScreen(),
+            ),
+          );
+        }
+      } else {
+        // Show error message from backend
+        _showMessage(
+          result['message'] ?? 'Subscription failed. Please try again.',
+          isError: true,
+        );
+        setState(() => _isProcessing = false);
       }
     } catch (e) {
-      _showMessage('Error: ${e.toString()}');
+      _showMessage('Error: ${e.toString()}', isError: true);
       setState(() => _isProcessing = false);
     }
   }

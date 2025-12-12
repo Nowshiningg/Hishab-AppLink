@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
 import '../../services/otp_service.dart';
+import '../../providers/finance_provider.dart';
 import 'income_setup_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -147,6 +149,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       if (registerResult['success'] == true) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('user_registered', true);
+
+        // Load JWT token into provider
+        if (mounted) {
+          final provider = context.read<FinanceProvider>();
+          await provider.loadJwtToken();
+        }
 
         if (!mounted) return;
 
