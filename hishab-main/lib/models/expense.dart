@@ -37,6 +37,22 @@ class Expense {
     );
   }
 
+  /// Create Expense from backend API JSON response
+  factory Expense.fromApiJson(Map<String, dynamic> json) {
+    return Expense(
+      id: json['id'] as int?,
+      amount: (json['amount'] as num).toDouble(),
+      category: json['category_name'] ?? json['category'] ?? 'Other',
+      note: json['note'] ?? '',
+      date: json['date'] != null
+          ? DateTime.parse(json['date'] as String)
+          : DateTime.now(),
+      timestamp: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+    );
+  }
+
   Expense copyWith({
     int? id,
     double? amount,

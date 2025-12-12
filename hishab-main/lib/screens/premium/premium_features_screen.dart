@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/finance_provider.dart';
 import 'pdf_report_generation_screen.dart';
+import 'analytics_screen.dart';
+import 'ai_chatbot_screen.dart';
 
 class PremiumFeaturesScreen extends StatefulWidget {
   const PremiumFeaturesScreen({super.key});
@@ -146,11 +148,22 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildFeatureCard(
-                        icon: Icons.analytics,
-                        title: 'Analytics',
-                        description: 'Detailed insights',
-                        color: const Color(0xFF0066CC),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AnalyticsScreen(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: _buildFeatureCard(
+                          icon: Icons.analytics,
+                          title: 'Analytics',
+                          description: 'Detailed insights',
+                          color: const Color(0xFF0066CC),
+                        ),
                       ),
                     ),
                   ],
@@ -170,11 +183,22 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildFeatureCard(
-                        icon: Icons.smart_toy,
-                        title: 'AI Assistant',
-                        description: 'Smart advice',
-                        color: const Color(0xFFF16725),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AiChatbotScreen(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: _buildFeatureCard(
+                          icon: Icons.smart_toy,
+                          title: 'AI Assistant',
+                          description: 'Smart advice',
+                          color: const Color(0xFFF16725),
+                        ),
                       ),
                     ),
                   ],

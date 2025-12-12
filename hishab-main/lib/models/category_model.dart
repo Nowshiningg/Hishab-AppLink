@@ -26,6 +26,16 @@ class CategoryModel {
     );
   }
 
+  /// Create CategoryModel from backend API JSON response
+  factory CategoryModel.fromApiJson(Map<String, dynamic> json) {
+    return CategoryModel(
+      id: json['id'] as int?,
+      name: json['name'] as String,
+      iconName: json['icon'] ?? 'category',
+      colorCode: json['color'] ?? '#999999',
+    );
+  }
+
   IconData get icon {
     switch (iconName) {
       case 'restaurant':
