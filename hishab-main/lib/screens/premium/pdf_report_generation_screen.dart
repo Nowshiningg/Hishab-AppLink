@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart' as open_file;
 import 'package:share_plus/share_plus.dart' as share_plus;
 import '../../services/analytics_api_service.dart';
+import '../../services/auth_service.dart';
+import '../auth/login_screen.dart';
 
 /// PDF Report Generation Screen
 ///
@@ -527,15 +529,28 @@ class _PdfReportGenerationScreenState extends State<PdfReportGenerationScreen> {
     });
 
     try {
-      // For now, use a placeholder token until authentication is fully implemented
-      final token = 'demo_token';
+      // Get JWT token from AuthService
+      final authService = AuthService();
+      final token = await authService.getToken();
 
-      if (token.isEmpty) {
-        throw Exception(
-            'Authentication required. Please login to generate reports.');
+      if (token == null || token.isEmpty) {
+        // User not authenticated, redirect to login
+        if (!mounted) return;
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('⚠️ Please login to generate reports'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+
+        await Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+        return;
       }
 
-      // Download PDF
+      // Download PDF with real JWT token
       final filePath = await AnalyticsApiService.downloadPdfReport(
         token: token,
         savingsPercent: _savingsPercent,

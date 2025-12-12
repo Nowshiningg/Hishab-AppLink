@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../services/user_registration_service.dart';
+import '../../services/auth_service.dart';
 import '../../services/otp_service.dart';
 import 'income_setup_screen.dart';
 
@@ -13,31 +13,22 @@ class RegistrationScreen extends StatefulWidget {
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
   
   bool _isLoading = false;
   bool _showOtpField = false;
-  bool _showPasswordFields = false;
-  bool _showPassword = false;
-  bool _showConfirmPassword = false;
   int _otpRemainingSeconds = 0;
   String? _errorMessage;
   String? _successMessage;
 
-  final _registrationService = UserRegistrationService();
+  final _authService = AuthService();
   final _otpService = OTPService();
 
   @override
   void dispose() {
-    _nameController.dispose();
     _phoneController.dispose();
     _otpController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -122,11 +113,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       if (!mounted) return;
 
       if (otpResult['success'] == true) {
-        setState(() {
-          _showPasswordFields = true;
-          _successMessage = '✅ OTP verified! Now set your password.';
-          _errorMessage = null;
-        });
+        // OTP verified, now register with backend
+        await _registerUser();
       } else {
         setState(() {
           _errorMessage = otpResult['message'] ?? 'OTP verification failed';
@@ -146,24 +134,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future<void> _registerUser() async {
-    if (_passwordController.text != _confirmPasswordController.text) {
-      setState(() {
-        _errorMessage = 'Passwords do not match';
-      });
-      return;
-    }
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final registerResult = await _registrationService.registerUser(
-        name: _nameController.text.trim(),
-        phoneNumber: _phoneController.text.trim(),
-        password: _passwordController.text,
-      );
+      final registerResult = await _authService.registerUser(_phoneController.text.trim());
 
       if (!mounted) return;
 
@@ -172,6 +149,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         await prefs.setBool('user_registered', true);
 
         if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Registration successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const IncomeSetupScreen()),
         );
@@ -343,116 +328,68 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ),
                 if (_successMessage != null) const SizedBox(height: 20),
 
-                if (!_showPasswordFields) ...[
-                  Text('Full Name *', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _nameController,
-                    enabled: !_isLoading && !_showOtpField,
-                    decoration: InputDecoration(
-                      hintText: 'e.g., Mohammad Rahman',
-                      prefixIcon: Icon(Icons.person_outline, color: colorScheme.primary),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) return 'Please enter your name';
-                      if (value.trim().length < 2) return 'Name must be at least 2 characters';
-                      return null;
-                    },
+                Text('Phone Number *', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: colorScheme.primary.withValues(alpha: 0.2)),
                   ),
-                  const SizedBox(height: 24),
-
-                  Text('Phone Number *', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _phoneController,
-                    enabled: !_isLoading && !_showOtpField,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      hintText: '01xxxxxxxxx',
-                      prefixIcon: Icon(Icons.phone_outlined, color: colorScheme.primary),
-                      prefixText: '+880 ',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: colorScheme.primary, size: 20),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'We\'ll send you an OTP to verify your number',
+                          style: TextStyle(fontSize: 13, height: 1.4),
+                        ),
                       ),
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) return 'Please enter phone';
-                      final cleanNumber = value.replaceAll(RegExp(r'\D'), '');
-                      if (cleanNumber.length < 10) return 'Phone must be at least 10 digits';
-                      return null;
-                    },
+                    ],
                   ),
-                  const SizedBox(height: 24),
-
-                  if (_showOtpField) ...[
-                    Text('Enter OTP *', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _otpController,
-                      enabled: !_isLoading,
-                      keyboardType: TextInputType.number,
-                      maxLength: 6,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 8),
-                      decoration: InputDecoration(
-                        hintText: '000000',
-                        counterText: '',
-                        prefixIcon: Icon(Icons.security, color: colorScheme.primary),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[50],
-                      ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _phoneController,
+                  enabled: !_isLoading && !_showOtpField,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    hintText: '01xxxxxxxxx',
+                    prefixIcon: Icon(Icons.phone_outlined, color: colorScheme.primary),
+                    prefixText: '+880 ',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: colorScheme.primary, width: 2),
                     ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _otpRemainingSeconds > 0 ? 'Expires in ${_otpRemainingSeconds}s' : 'OTP Expired',
-                          style: TextStyle(fontSize: 12, color: _otpRemainingSeconds > 0 ? Colors.orange : Colors.red),
-                        ),
-                        TextButton(
-                          onPressed: _otpRemainingSeconds <= 0 && !_isLoading ? _resendOtp : null,
-                          child: Text(
-                            _otpRemainingSeconds <= 0 ? 'Resend OTP' : 'Resend',
-                            style: TextStyle(color: _otpRemainingSeconds <= 0 ? colorScheme.primary : Colors.grey),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                ],
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) return 'Please enter phone';
+                    final cleanNumber = value.replaceAll(RegExp(r'\D'), '');
+                    if (cleanNumber.length < 10) return 'Phone must be at least 10 digits';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
 
-                if (_showPasswordFields) ...[
-                  Text('Password *', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                if (_showOtpField) ...[
+                  Text('Enter OTP *', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 12),
                   TextFormField(
-                    controller: _passwordController,
+                    controller: _otpController,
                     enabled: !_isLoading,
-                    obscureText: !_showPassword,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 8),
                     decoration: InputDecoration(
-                      hintText: 'Min 8 characters',
-                      prefixIcon: Icon(Icons.lock_outline, color: colorScheme.primary),
-                      suffixIcon: IconButton(
-                        icon: Icon(_showPassword ? Icons.visibility : Icons.visibility_off),
-                        onPressed: () => setState(() => _showPassword = !_showPassword),
-                      ),
+                      hintText: '000000',
+                      counterText: '',
+                      prefixIcon: Icon(Icons.security, color: colorScheme.primary),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -461,40 +398,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       filled: true,
                       fillColor: Colors.grey[50],
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) return 'Please enter password';
-                      if (value.length < 8) return 'Min 8 characters required';
-                      return null;
-                    },
                   ),
-                  const SizedBox(height: 24),
-
-                  Text('Confirm Password *', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _confirmPasswordController,
-                    enabled: !_isLoading,
-                    obscureText: !_showConfirmPassword,
-                    decoration: InputDecoration(
-                      hintText: 'Re-enter password',
-                      prefixIcon: Icon(Icons.lock_outline, color: colorScheme.primary),
-                      suffixIcon: IconButton(
-                        icon: Icon(_showConfirmPassword ? Icons.visibility : Icons.visibility_off),
-                        onPressed: () => setState(() => _showConfirmPassword = !_showConfirmPassword),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _otpRemainingSeconds > 0 ? 'Expires in ${_otpRemainingSeconds}s' : 'OTP Expired',
+                        style: TextStyle(fontSize: 12, color: _otpRemainingSeconds > 0 ? Colors.orange : Colors.red),
                       ),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                      TextButton(
+                        onPressed: _otpRemainingSeconds <= 0 && !_isLoading ? _resendOtp : null,
+                        child: Text(
+                          _otpRemainingSeconds <= 0 ? 'Resend OTP' : 'Resend',
+                          style: TextStyle(color: _otpRemainingSeconds <= 0 ? colorScheme.primary : Colors.grey),
+                        ),
                       ),
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) return 'Please confirm password';
-                      if (value != _passwordController.text) return 'Passwords do not match';
-                      return null;
-                    },
+                    ],
                   ),
                   const SizedBox(height: 24),
                 ],
@@ -513,7 +433,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Your information is securely stored.',
+                          'No password needed! Just verify your phone number.',
                           style: TextStyle(fontSize: 13, color: Colors.blue[700]),
                         ),
                       ),
@@ -526,11 +446,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: _isLoading
-                        ? null
-                        : (_showPasswordFields
-                            ? _registerUser
-                            : (_showOtpField ? _verifyOtp : _requestOtp)),
+                    onPressed: _isLoading ? null : (_showOtpField ? _verifyOtp : _requestOtp),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.primary,
                       disabledBackgroundColor: Colors.grey[300],
@@ -546,9 +462,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             ),
                           )
                         : Text(
-                            _showPasswordFields
-                                ? 'Create Account'
-                                : (_showOtpField ? 'Verify OTP' : 'Send OTP'),
+                            _showOtpField ? 'Verify & Register' : 'Send OTP',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
