@@ -4,13 +4,17 @@ library;
 
 class ApiConfig {
   // Base URL - Update this with your deployed backend URL
+  // For deployed backend (Render/Vercel):
   static const String baseUrl = 'https://hishab-backend.onrender.com';
-  
-  // For local development, use:
+
+  // For local development, uncomment this line:
   // static const String baseUrl = 'http://localhost:3001';
-  
-  // API Key - Stored as environment variable on Render
-  // This key is used for authentication with backend
+  // For Android emulator connecting to local backend, use:
+  // static const String baseUrl = 'http://10.0.2.2:3001';
+
+  // API Key - Stored as environment variable on backend
+  // This key is used for Banglalink API authentication
+  // For testing without Banglalink, use dev endpoints instead
   static const String apiKey = 'YOUR_API_KEY_HERE';
   
   // API Endpoints
@@ -53,6 +57,24 @@ class ApiConfig {
   static const String pdfReportBase = '/api/pdf-report';
   static const String analyticsPdfEndpoint = '$pdfReportBase/analytics';
   static const String pdfReportHealthEndpoint = '$pdfReportBase/health';
+
+  // Chatbot API Endpoints
+  static const String chatbotBase = '/chatbot';
+  static const String chatbotChatEndpoint = '$chatbotBase/chat';
+  static const String chatbotSummaryEndpoint = '$chatbotBase/summary';
+  static const String chatbotFinancialDataEndpoint = '$chatbotBase/financial-data';
+
+  // Core Expense & Category Endpoints (require JWT auth)
+  static const String expensesEndpoint = '/expenses';
+  static const String categoriesEndpoint = '/categories';
+
+  // Development Endpoints (for testing without Banglalink API)
+  static const String devBase = '/dev';
+  static const String devRegisterEndpoint = '$devBase/register';
+  static const String devLoginEndpoint = '$devBase/login';
+  static const String devSubscribeEndpoint = '$devBase/subscribe';
+  static const String devUnsubscribeEndpoint = '$devBase/unsubscribe';
+  static const String devGetUserEndpoint = '$devBase/user';
 
   // Charge Types for CaaS
   static const String pdfExportCharge = 'pdf_export';
