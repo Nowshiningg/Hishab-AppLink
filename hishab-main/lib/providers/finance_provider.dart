@@ -32,6 +32,7 @@ class FinanceProvider extends ChangeNotifier {
   int _consecutiveDays = 0;
   bool _isPremiumSubscribed = false;
   bool _showPremiumThankYou = false;
+  String? _jwtToken;
 
   // Gamification state
   List<SavingsGoal> _goals = [];
@@ -53,6 +54,7 @@ class FinanceProvider extends ChangeNotifier {
   int get consecutiveDays => _consecutiveDays;
   bool get isPremiumSubscribed => _isPremiumSubscribed;
   bool get showPremiumThankYou => _showPremiumThankYou;
+  String? get jwtToken => _jwtToken;
 
   // Gamification getters
   List<SavingsGoal> get goals => _goals;
@@ -147,6 +149,25 @@ class FinanceProvider extends ChangeNotifier {
   Future<void> setUserPhone(String phone) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_phone', phone);
+    notifyListeners();
+  }
+
+  // Save JWT token
+  Future<void> setJwtToken(String? token) async {
+    _jwtToken = token;
+    final prefs = await SharedPreferences.getInstance();
+    if (token != null) {
+      await prefs.setString('jwt_token', token);
+    } else {
+      await prefs.remove('jwt_token');
+    }
+    notifyListeners();
+  }
+
+  // Load JWT token
+  Future<void> loadJwtToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    _jwtToken = prefs.getString('jwt_token');
     notifyListeners();
   }
 

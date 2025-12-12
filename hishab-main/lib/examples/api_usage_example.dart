@@ -9,7 +9,6 @@ import '../services/expense_api_service.dart';
 import '../services/chatbot_api_service.dart';
 import '../services/analytics_api_service.dart';
 import '../models/expense.dart';
-import '../models/category_model.dart';
 
 /// Example 1: User Registration and Login
 class AuthExample {
