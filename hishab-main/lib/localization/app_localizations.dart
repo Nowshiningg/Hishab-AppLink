@@ -523,8 +523,6 @@ class AppLocalizations {
       'totalBudget': 'মোট বাজেট',
       'savingsStatus': 'সঞ্চয় স্ট্যাটাস',
       'noBudgetSet': 'কোন বাজেট সেট নেই',
-      'totalBudget': 'মোট বাজেট',
-      'savingsStatus': 'সঞ্চয় অবস্থা',
 
       // Daily Reminders
       'reminders': 'রিমাইন্ডার',

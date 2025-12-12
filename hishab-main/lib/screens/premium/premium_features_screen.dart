@@ -60,10 +60,10 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
           ),
         ),
         child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
             // Compact Premium Header
             Row(
               children: [
@@ -213,7 +213,7 @@ class _PremiumFeaturesScreenState extends State<PremiumFeaturesScreen> {
                         color: const Color(0xFF47B881),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),

@@ -107,8 +107,8 @@ class OTPService {
     var s = raw.trim();
     // Remove whitespace
     s = s.replaceAll(RegExp(r'\s+'), '');
-    if (s.startsWith('+880')) return '0' + s.substring(4);
-    if (s.startsWith('880')) return '0' + s.substring(3);
+    if (s.startsWith('+880')) return '0${s.substring(4)}';
+    if (s.startsWith('880')) return '0${s.substring(3)}';
     return s;
   }
 

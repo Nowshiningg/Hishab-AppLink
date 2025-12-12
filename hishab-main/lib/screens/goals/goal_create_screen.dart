@@ -458,7 +458,7 @@ class _GoalCreateScreenState extends State<GoalCreateScreen> {
                     ),
                   ),
                   value: _notifyOnMilestone,
-                  activeColor: primaryColor,
+                  activeThumbColor: primaryColor,
                   onChanged: (v) => setState(() => _notifyOnMilestone = v),
                 ),
               ),

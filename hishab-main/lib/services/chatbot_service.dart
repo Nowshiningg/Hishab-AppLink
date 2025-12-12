@@ -9,14 +9,12 @@ class ChatbotService {
   ) async {
     final lowerQuestion = question.toLowerCase();
 
-    // Get current month data
-    final now = DateTime.now();
-    final startOfMonth = DateTime(now.year, now.month, 1);
-    final endOfMonth = DateTime(now.year, now.month + 1, 0);
-
-    // Get last month data
-    final startOfLastMonth = DateTime(now.year, now.month - 1, 1);
-    final endOfLastMonth = DateTime(now.year, now.month, 0);
+    // Reserved for future use - date range variables
+    // final now = DateTime.now();
+    // final startOfMonth = DateTime(now.year, now.month, 1);
+    // final endOfMonth = DateTime(now.year, now.month + 1, 0);
+    // final startOfLastMonth = DateTime(now.year, now.month - 1, 1);
+    // final endOfLastMonth = DateTime(now.year, now.month, 0);
 
     // Question type detection and response
     try {

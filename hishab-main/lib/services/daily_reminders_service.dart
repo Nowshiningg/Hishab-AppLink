@@ -355,10 +355,6 @@ class DailyRemindersService {
     _scheduledReminders.add(reminder.copyWith(isScheduled: true));
   }
 
-  void _copyWithHelper(ReminderNotification reminder, bool isScheduled) {
-    // Helper for copyWith
-  }
-
   /// Schedule daily reminders
   void scheduleDailyReminders({
     required ReminderConfig config,

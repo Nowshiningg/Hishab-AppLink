@@ -5,6 +5,7 @@
 ///
 /// SECURITY NOTE: In production, these values should be stored securely
 /// (e.g., in environment variables or secure key storage) and NOT committed to version control.
+library;
 
 class BangalinkConfig {
   // ========== API CREDENTIALS ==========

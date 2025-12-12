@@ -115,7 +115,6 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
               ...allCategories.map((category) {
                 final categoryName = category.name;
                 final status = budgetStatus[categoryName];
-                final hasBudget = status != null;
 
                 return _buildCategoryBudgetCard(
                   context,

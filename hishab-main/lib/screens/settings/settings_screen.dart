@@ -751,7 +751,7 @@ class SettingsScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 enabled
-                                    ? '$time'
+                                    ? time
                                     : loc.translate('reminderDisabled'),
                                 style: TextStyle(
                                   fontSize: 15,

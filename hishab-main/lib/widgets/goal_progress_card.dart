@@ -48,6 +48,7 @@ class GoalProgressCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            
             // Title
             Text(
               goal.title,
