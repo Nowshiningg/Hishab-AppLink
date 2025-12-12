@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/finance_provider.dart';
 import '../../services/chatbot_api_service.dart';
+import '../../services/auth_service.dart';
 
 /// AI Chatbot Screen
 ///
@@ -38,9 +37,9 @@ class _AiChatbotScreenState extends State<AiChatbotScreen> {
   /// Load quick financial summary on startup
   Future<void> _loadQuickSummary() async {
     try {
-      final financeProvider =
-          Provider.of<FinanceProvider>(context, listen: false);
-      final token = financeProvider.jwtToken;
+      // Get token from AuthService (more reliable)
+      final authService = AuthService();
+      final token = await authService.getToken();
 
       if (token == null || token.isEmpty) return;
 
@@ -435,10 +434,9 @@ class _AiChatbotScreenState extends State<AiChatbotScreen> {
     });
 
     try {
-      // Get token
-      final financeProvider =
-          Provider.of<FinanceProvider>(context, listen: false);
-      final token = financeProvider.jwtToken;
+      // Get token from AuthService (more reliable)
+      final authService = AuthService();
+      final token = await authService.getToken();
 
       if (token == null || token.isEmpty) {
         throw Exception('Please login to use the chatbot');

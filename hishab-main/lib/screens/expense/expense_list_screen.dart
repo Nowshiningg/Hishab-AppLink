@@ -46,116 +46,160 @@ class ExpenseListScreen extends StatelessWidget {
           }
 
           if (provider.expenses.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.receipt_long,
-                    size: 100,
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    loc.translate('noExpenses'),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            return RefreshIndicator(
+              onRefresh: () async {
+                // Only premium users can sync from cloud
+                if (provider.isPremiumSubscribed) {
+                  await provider.syncExpensesFromCloud();
+                } else {
+                  // Show message that this is a premium feature
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(loc.translate('premiumFeatureCloudSync')),
+                        backgroundColor: const Color(0xFFF16725),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height - 200,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.receipt_long,
+                          size: 100,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          loc.translate('noExpenses'),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          loc.translate('addExpense'),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    loc.translate('addExpense'),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                    ),
-                  ),
-                ],
+                ),
               ),
             );
           }
 
           final groupedExpenses = provider.getExpensesGroupedByDate();
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: groupedExpenses.length,
-            itemBuilder: (context, index) {
-              final dateKey = groupedExpenses.keys.elementAt(index);
-              final expenses = groupedExpenses[dateKey]!;
-              final dailyTotal = expenses.fold<double>(
-                0,
-                (sum, expense) => sum + expense.amount,
-              );
-
-              // Translate "Today" and "Yesterday"
-              String displayDateKey = dateKey;
-              if (dateKey == 'Today') {
-                displayDateKey = loc.translate('today');
-              } else if (dateKey == 'Yesterday') {
-                displayDateKey = loc.translate('yesterday');
+          return RefreshIndicator(
+            onRefresh: () async {
+              // Only premium users can sync from cloud
+              if (provider.isPremiumSubscribed) {
+                await provider.syncExpensesFromCloud();
+              } else {
+                // Show message that this is a premium feature
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(loc.translate('premiumFeatureCloudSync')),
+                      backgroundColor: const Color(0xFFF16725),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
               }
+            },
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: groupedExpenses.length,
+              itemBuilder: (context, index) {
+                final dateKey = groupedExpenses.keys.elementAt(index);
+                final expenses = groupedExpenses[dateKey]!;
+                final dailyTotal = expenses.fold<double>(
+                  0,
+                  (sum, expense) => sum + expense.amount,
+                );
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          displayDateKey,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
+                // Translate "Today" and "Yesterday"
+                String displayDateKey = dateKey;
+                if (dateKey == 'Today') {
+                  displayDateKey = loc.translate('today');
+                } else if (dateKey == 'Yesterday') {
+                  displayDateKey = loc.translate('yesterday');
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            displayDateKey,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                           ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                const Color(0xFFF16725),
-                                const Color(0xFFF16725).withOpacity(0.8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  const Color(0xFFF16725),
+                                  const Color(0xFFF16725).withOpacity(0.8),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFF16725).withOpacity(0.3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFF16725).withOpacity(0.3),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
+                            child: Text(
+                              '৳${NumberFormat('#,##0.00').format(dailyTotal)}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
-                            ],
-                          ),
-                          child: Text(
-                            '৳${NumberFormat('#,##0.00').format(dailyTotal)}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  ...expenses.map(
-                    (expense) => _buildExpenseItem(context, expense, provider),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              );
-            },
+                    ...expenses.map(
+                      (expense) => _buildExpenseItem(context, expense, provider),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              },
+            ),
           );
         },
         ),

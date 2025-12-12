@@ -12,6 +12,7 @@ import '../services/goals_service.dart';
 import '../services/wishlist_service.dart';
 import '../services/achievements_service.dart';
 import '../services/notification_service.dart';
+import '../services/expense_service.dart';
 
 class FinanceProvider extends ChangeNotifier {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
@@ -85,6 +86,11 @@ class FinanceProvider extends ChangeNotifier {
       await loadAchievements();
       await loadStreaks();
       await _notificationService.initialize();
+      
+      // Sync expenses from cloud for premium users
+      if (_isPremiumSubscribed) {
+        await syncExpensesFromCloud();
+      }
     } catch (e) {
       debugPrint('Error initializing: $e');
     } finally {
@@ -181,6 +187,109 @@ class FinanceProvider extends ChangeNotifier {
   Future<void> loadExpenses() async {
     _expenses = await _dbHelper.getAllExpenses();
     notifyListeners();
+  }
+
+  // Sync expenses from cloud (Premium feature)
+  Future<bool> syncExpensesFromCloud() async {
+    if (!_isPremiumSubscribed) {
+      print('⚠️ Cloud sync is a premium feature');
+      return false;
+    }
+
+    try {
+      // Get all expenses from Supabase
+      final cloudExpenses = await ExpenseService.getAllExpenses();
+      
+      if (cloudExpenses == null || cloudExpenses.isEmpty) {
+        print('✅ No cloud expenses to sync');
+        return true;
+      }
+
+      print('📥 Syncing ${cloudExpenses.length} expenses from cloud...');
+
+      // Get existing local expenses
+      final localExpenses = await _dbHelper.getAllExpenses();
+
+      int syncedCount = 0;
+
+      // Add cloud expenses that don't exist locally
+      for (var cloudExpense in cloudExpenses) {
+        // Check if expense already exists locally by comparing key fields
+        final exists = localExpenses.any((local) =>
+            local.amount == cloudExpense.amount &&
+            local.category == cloudExpense.category &&
+            local.date.year == cloudExpense.date.year &&
+            local.date.month == cloudExpense.date.month &&
+            local.date.day == cloudExpense.date.day);
+
+        if (!exists) {
+          // Add cloud expense to local database
+          await _dbHelper.insertExpense(cloudExpense);
+          syncedCount++;
+        }
+      }
+
+      // Reload expenses from local database
+      await loadExpenses();
+
+      print('✅ Synced $syncedCount new expenses from cloud');
+      return true;
+    } catch (e) {
+      print('❌ Error syncing expenses from cloud: $e');
+      return false;
+    }
+  }
+
+  // Sync expenses from cloud (Premium feature)
+  Future<bool> syncExpensesFromCloud() async {
+    if (!_isPremiumSubscribed) {
+      print('⚠️ Cloud sync is a premium feature');
+      return false;
+    }
+
+    try {
+      // Get all expenses from Supabase
+      final cloudExpenses = await ExpenseService.getAllExpenses();
+      
+      if (cloudExpenses == null || cloudExpenses.isEmpty) {
+        print('✅ No cloud expenses to sync');
+        return true;
+      }
+
+      print('📥 Syncing ${cloudExpenses.length} expenses from cloud...');
+
+      // Get existing local expenses
+      final localExpenses = await _dbHelper.getAllExpenses();
+      final localExpenseIds = localExpenses.map((e) => e.id).toSet();
+
+      int syncedCount = 0;
+
+      // Add cloud expenses that don't exist locally
+      for (var cloudExpense in cloudExpenses) {
+        // Check if expense already exists locally by comparing key fields
+        final exists = localExpenses.any((local) =>
+            local.amount == cloudExpense.amount &&
+            local.category == cloudExpense.category &&
+            local.date.year == cloudExpense.date.year &&
+            local.date.month == cloudExpense.date.month &&
+            local.date.day == cloudExpense.date.day);
+
+        if (!exists) {
+          // Add cloud expense to local database
+          await _dbHelper.insertExpense(cloudExpense);
+          syncedCount++;
+        }
+      }
+
+      // Reload expenses from local database
+      await loadExpenses();
+
+      print('✅ Synced $syncedCount new expenses from cloud');
+      return true;
+    } catch (e) {
+      print('❌ Error syncing expenses from cloud: $e');
+      return false;
+    }
   }
 
   // Load income

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/finance_provider.dart';
 import '../../services/analytics_api_service.dart';
+import '../../services/auth_service.dart';
 
 /// Analytics Screen
 ///
@@ -47,9 +48,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     });
 
     try {
-      final financeProvider =
-          Provider.of<FinanceProvider>(context, listen: false);
-      final token = financeProvider.jwtToken;
+      // Get token from AuthService (more reliable)
+      final authService = AuthService();
+      final token = await authService.getToken();
 
       if (token == null || token.isEmpty) {
         throw Exception('Please login to view analytics');
