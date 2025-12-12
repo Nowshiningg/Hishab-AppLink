@@ -8,6 +8,7 @@ import '../../localization/app_localizations.dart';
 import '../../services/notification_service.dart';
 import '../../services/banglalink_integration_service.dart';
 import '../../services/update_checker_service.dart';
+import '../../services/category_service.dart';
 import '../premium/premium_subscription_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -355,37 +356,129 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: provider.categories.map((category) {
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: category.color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: category.color.withOpacity(0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(category.icon, color: category.color, size: 16),
-                    const SizedBox(width: 6),
+          FutureBuilder<Map<String, dynamic>?>(
+            future: CategoryService.getAllCategories(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              
+              final defaultCategories = snapshot.data?['default'] ?? [];
+              final customCategories = snapshot.data?['custom'] ?? [];
+              final allCategories = [...provider.categories];
+              
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (defaultCategories.isNotEmpty) ...[
                     Text(
-                      loc.translateCategory(category.name),
+                      'Default Categories',
                       style: TextStyle(
-                        color: category.color,
-                        fontWeight: FontWeight.w600,
                         fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       ),
                     ),
+                    const SizedBox(height: 8),
                   ],
-                ),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: allCategories.map((category) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: category.color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: category.color.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(category.icon, color: category.color, size: 16),
+                            const SizedBox(width: 6),
+                            Text(
+                              loc.translateCategory(category.name),
+                              style: TextStyle(
+                                color: category.color,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  if (customCategories.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'Custom Categories',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: customCategories.map<Widget>((category) {
+                        final categoryColor = Color(
+                          int.parse(
+                            (category['color'] ?? '#4ECDC4').substring(1),
+                            radix: 16,
+                          ) + 0xFF000000,
+                        );
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: categoryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: categoryColor.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.category, color: categoryColor, size: 16),
+                              const SizedBox(width: 6),
+                              Text(
+                                category['name'],
+                                style: TextStyle(
+                                  color: categoryColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              GestureDetector(
+                                onTap: () => _deleteCustomCategory(
+                                  context,
+                                  category['id'],
+                                  category['name'],
+                                ),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 14,
+                                  color: categoryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ],
               );
-            }).toList(),
+            },
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -1150,22 +1243,70 @@ class SettingsScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () async {
                 if (nameController.text.trim().isNotEmpty) {
-                  final newCategory = CategoryModel(
-                    name: nameController.text.trim(),
-                    iconName: selectedIcon,
-                    colorCode: selectedColor,
+                  // Show loading
+                  showDialog(
+                    context: dialogContext,
+                    barrierDismissible: false,
+                    builder: (context) => const Center(
+                      child: CircularProgressIndicator(),
+                    ),
                   );
-                  await provider.addCategory(newCategory);
-                  if (dialogContext.mounted) {
-                    Navigator.of(dialogContext).pop();
-                  }
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(AppLocalizations.of(context).translate('categoryAdded')),
-                        backgroundColor: const Color(0xFFF16725),
-                      ),
+
+                  try {
+                    // Call API to create custom category
+                    final result = await CategoryService.createCustomCategory(
+                      name: nameController.text.trim(),
+                      color: selectedColor,
                     );
+
+                    if (dialogContext.mounted) {
+                      Navigator.pop(dialogContext); // Close loading
+                    }
+
+                    if (result != null) {
+                      // Also add to local provider for immediate UI update
+                      final newCategory = CategoryModel(
+                        name: nameController.text.trim(),
+                        iconName: selectedIcon,
+                        colorCode: selectedColor,
+                      );
+                      await provider.addCategory(newCategory);
+
+                      if (dialogContext.mounted) {
+                        Navigator.of(dialogContext).pop();
+                      }
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(AppLocalizations.of(context).translate('categoryAdded')),
+                            backgroundColor: const Color(0xFFF16725),
+                          ),
+                        );
+                        // Rebuild to show updated categories
+                        (context as Element).markNeedsBuild();
+                      }
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Failed to create category. Name might already exist.'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    if (dialogContext.mounted) {
+                      Navigator.pop(dialogContext); // Close loading
+                    }
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   }
                 }
               },
@@ -1699,6 +1840,80 @@ class SettingsScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _deleteCustomCategory(BuildContext context, int categoryId, String categoryName) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete Custom Category'),
+        content: Text('Are you sure you want to delete "$categoryName"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      try {
+        final success = await CategoryService.deleteCustomCategory(categoryId);
+        
+        if (context.mounted) {
+          Navigator.pop(context); // Close loading
+        }
+
+        if (success) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('✅ Category deleted successfully'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            // Rebuild to show updated categories
+            (context as Element).markNeedsBuild();
+          }
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('❌ Failed to delete category'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.pop(context); // Close loading
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 }
 
